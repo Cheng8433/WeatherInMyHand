@@ -13,8 +13,10 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // 从和风天气控制台获取的 Key ID
+    // 从和风天气控制台获取的 Key ID (凭据ID)
     private static final String kid = "K95D3VE8WH";
+    // 项目ID (Project ID)
+    private static final String projectId = "2N8569G9JK";
 
     public String generateToken() {
         try {
@@ -27,10 +29,11 @@ public class JwtUtil {
             KeyFactory keyFactory = KeyFactory.getInstance("Ed25519");
             PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
 
-            // 构建并返回 JWT
+            // 构建并返回 JWT (添加 .subject 字段)
             return Jwts.builder()
                     .header().keyId(kid).and()
-                    .issuer(kid)
+                    .issuer(kid)           // 签发者 = 凭据ID
+                    .subject(projectId)    // 主题 = 项目ID (必须)
                     .issuedAt(new Date())
                     .expiration(Date.from(Instant.now().plusSeconds(3600)))
                     .signWith(privateKey, Jwts.SIG.EdDSA)
