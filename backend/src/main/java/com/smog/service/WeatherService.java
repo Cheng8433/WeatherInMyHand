@@ -63,7 +63,10 @@ public class WeatherService {
     public Weather getWeatherByCity(double latitude, double longitude,String cityName) throws IOException {
         log.info("获取实时天气");
         String token = jwtUtil.generateToken();
-        String url = API_HOST + "/v7/weather/now?location=" + latitude + "/" + longitude;
+        // 保留小数点后两位
+        String latStr = String.format("%.2f", latitude);
+        String lonStr = String.format("%.2f", longitude);
+        String url = API_HOST + "/v7/weather/now?location=" + lonStr + "," + latStr;
         log.debug("请求URL: {}", url);
 
         Request request = new Request.Builder()
@@ -169,12 +172,16 @@ public class WeatherService {
                             JsonObject primary = index.getAsJsonObject("primaryPollutant");
                             if (primary.has("code")) weather.setPrimaryPollutant(primary.get("code").getAsString());
                         }
-                    } else if ("qaqi".equals(code)) {
-                        if (index.has("aqi")) {
-                            weather.setAqiQa(BigDecimal.valueOf(index.get("aqi").getAsDouble()));
-                        }
+                    } else if ("cn-mee".equals(code)) {
+                        if (index.has("aqi")) weather.setAqi(index.get("aqi").getAsInt());
+                        if (index.has("aqi")) weather.setAqiCN(index.get("aqi").getAsInt());
+                        if (index.has("category")) weather.setAirQuality(index.get("category").getAsString());
+                        if (index.has("primaryPollutant")) {
+                           JsonObject primary = index.getAsJsonObject("primaryPollutant");
+                           if (primary.has("code")) weather.setPrimaryPollutant(primary.get("code").getAsString());
                     }
                 }
+            }
                 log.debug("空气质量指数解析完成，AQI(US): {}", weather.getAqiUs());
             }
 

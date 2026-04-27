@@ -1,120 +1,33 @@
-2026-04-24 16:13:33.822  INFO 40808 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 40808 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
-2026-04-24 16:13:33.827  INFO 40808 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
-2026-04-24 16:13:34.461  INFO 40808 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-04-24 16:13:34.516  INFO 40808 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 47 ms. Found 2 JPA repository interfaces.
-2026-04-24 16:13:35.051  INFO 40808 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2026-04-24 16:13:35.059  INFO 40808 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-04-24 16:13:35.060  INFO 40808 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
-2026-04-24 16:13:35.208  INFO 40808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-04-24 16:13:35.208  INFO 40808 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1312 ms
-2026-04-24 16:13:35.235  INFO 40808 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-04-24 16:13:35.424  INFO 40808 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-04-24 16:13:35.434  INFO 40808 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
-2026-04-24 16:13:35.572  INFO 40808 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-04-24 16:13:35.615  INFO 40808 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
-2026-04-24 16:13:35.770  INFO 40808 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2026-04-24 16:13:35.873  INFO 40808 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-2026-04-24 16:13:36.497  INFO 40808 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2026-04-24 16:13:36.509  INFO 40808 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-04-24 16:13:37.176  WARN 40808 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-04-24 16:13:37.514  INFO 40808 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-2026-04-24 16:13:37.522  INFO 40808 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 4.154 seconds (JVM running for 5.472)
-2026-04-24 16:13:40.768  INFO 40808 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-04-24 16:13:40.768  INFO 40808 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-04-24 16:13:40.769  INFO 40808 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2026-04-24 16:13:40.808  INFO 40808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
-2026-04-24 16:13:40.809  INFO 40808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气，城市：西安
-2026-04-24 16:13:40.921 DEBUG 40808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=西安
-2026-04-24 16:13:41.413 ERROR 40808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
-2026-04-24 16:13:41.418 ERROR 40808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气异常
-
-java.io.IOException: API 请求失败，HTTP 状态码：400
-	at com.smog.service.WeatherService.getWeatherByCity(WeatherService.java:77) ~[classes/:na]
-	at com.smog.service.WeatherService.getWeatherAndAirQuality(WeatherService.java:241) ~[classes/:na]
-	at com.smog.controller.WeatherController.getWeatherInfo(WeatherController.java:23) ~[classes/:na]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:205) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:150) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1072) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:965) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:898) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at javax.servlet.http.HttpServlet.service(HttpServlet.java:529) ~[tomcat-embed-core-9.0.78.jar:4.0.FR]
-	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.29.jar:5.3.29]
-	at javax.servlet.http.HttpServlet.service(HttpServlet.java:623) ~[tomcat-embed-core-9.0.78.jar:4.0.FR]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:209) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:481) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:130) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:390) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:926) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1791) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
-	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
-
-2026-04-24 16:22:24.193  INFO 40808 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-04-24 16:22:24.194  INFO 40808 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
-2026-04-24 16:22:24.405  INFO 40808 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-04-24 16:22:24.480  INFO 40808 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
-2026-04-24 16:22:31.350  INFO 27252 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 27252 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
-2026-04-24 16:22:31.355  INFO 27252 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
-2026-04-24 16:22:31.943  INFO 27252 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-04-24 16:22:32.000  INFO 27252 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 48 ms. Found 2 JPA repository interfaces.
-2026-04-24 16:22:32.797  INFO 27252 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2026-04-24 16:22:32.812  INFO 27252 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-04-24 16:22:32.813  INFO 27252 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
-2026-04-24 16:22:33.077  INFO 27252 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-04-24 16:22:33.077  INFO 27252 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1651 ms
-2026-04-24 16:22:33.124  INFO 27252 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-04-24 16:22:33.355  INFO 27252 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-04-24 16:22:33.367  INFO 27252 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
-2026-04-24 16:22:33.530  INFO 27252 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-04-24 16:22:33.587  INFO 27252 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
-2026-04-24 16:22:33.749  INFO 27252 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2026-04-24 16:22:33.857  INFO 27252 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-2026-04-24 16:22:34.475  INFO 27252 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2026-04-24 16:22:34.486  INFO 27252 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-04-24 16:22:35.056  WARN 27252 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-04-24 16:22:35.413  INFO 27252 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-2026-04-24 16:22:35.422  INFO 27252 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 4.565 seconds (JVM running for 5.883)
-2026-04-24 16:22:37.290  INFO 27252 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-04-24 16:22:37.290  INFO 27252 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-04-24 16:22:37.291  INFO 27252 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2026-04-24 16:22:38.164 DEBUG 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
-2026-04-24 16:22:38.164  INFO 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
-2026-04-24 16:22:38.165  INFO 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
-2026-04-24 16:22:38.169 DEBUG 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321/108.93965
-2026-04-24 16:22:38.434 ERROR 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
-2026-04-24 16:22:38.439 ERROR 27252 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气异常
+2026-04-27 15:59:56.462  INFO 27456 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 27456 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 15:59:56.475  INFO 27456 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 15:59:57.319  INFO 27456 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 15:59:57.403  INFO 27456 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 68 ms. Found 2 JPA repository interfaces.
+2026-04-27 15:59:58.242  INFO 27456 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 15:59:58.259  INFO 27456 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 15:59:58.259  INFO 27456 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 15:59:58.505  INFO 27456 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 15:59:58.506  INFO 27456 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1972 ms
+2026-04-27 15:59:58.548  INFO 27456 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 15:59:58.830  INFO 27456 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 15:59:58.843  INFO 27456 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 15:59:59.108  INFO 27456 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 15:59:59.192  INFO 27456 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 15:59:59.429  INFO 27456 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 15:59:59.559  INFO 27456 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 16:00:00.204  INFO 27456 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 16:00:00.213  INFO 27456 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:00:00.803  WARN 27456 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 16:00:01.233  INFO 27456 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 16:00:01.242  INFO 27456 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 5.301 seconds (JVM running for 6.837)
+2026-04-27 16:00:41.110  INFO 27456 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:00:41.111  INFO 27456 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 16:00:41.111  INFO 27456 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-04-27 16:01:15.978 DEBUG 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:01:15.978  INFO 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:01:15.979  INFO 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:01:15.983 DEBUG 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321/108.93965
+2026-04-27 16:01:16.246 ERROR 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
+2026-04-27 16:01:16.252 ERROR 27456 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 获取实时天气异常
 
 java.io.IOException: API 请求失败，HTTP 状态码：400
 	at com.smog.service.WeatherService.getWeatherByCity(WeatherService.java:77) ~[classes/:na]
@@ -169,12 +82,12 @@ java.io.IOException: API 请求失败，HTTP 状态码：400
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
 	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
 
-2026-04-24 16:22:47.608 DEBUG 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
-2026-04-24 16:22:47.608  INFO 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
-2026-04-24 16:22:47.609  INFO 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 获取实时天气
-2026-04-24 16:22:47.612 DEBUG 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321/108.93965
-2026-04-24 16:22:47.647 ERROR 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
-2026-04-24 16:22:47.648 ERROR 27252 --- [http-nio-8080-exec-2] com.smog.service.WeatherService          : 获取实时天气异常
+2026-04-27 16:06:11.454 DEBUG 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:06:11.455  INFO 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:06:11.455  INFO 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:06:11.461 DEBUG 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321/108.93965
+2026-04-27 16:06:11.661 ERROR 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
+2026-04-27 16:06:11.662 ERROR 27456 --- [http-nio-8080-exec-5] com.smog.service.WeatherService          : 获取实时天气异常
 
 java.io.IOException: API 请求失败，HTTP 状态码：400
 	at com.smog.service.WeatherService.getWeatherByCity(WeatherService.java:77) ~[classes/:na]
@@ -229,12 +142,40 @@ java.io.IOException: API 请求失败，HTTP 状态码：400
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
 	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
 
-2026-04-24 16:23:05.511 DEBUG 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
-2026-04-24 16:23:05.512  INFO 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
-2026-04-24 16:23:05.512  INFO 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 获取实时天气
-2026-04-24 16:23:05.514 DEBUG 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321/108.93965
-2026-04-24 16:23:05.550 ERROR 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
-2026-04-24 16:23:05.551 ERROR 27252 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 获取实时天气异常
+2026-04-27 16:06:44.219  INFO 27456 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:06:44.220  INFO 27456 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 16:06:44.413  INFO 27456 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 16:06:44.426  INFO 27456 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 16:06:50.827  INFO 33780 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 33780 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 16:06:50.830  INFO 33780 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 16:06:51.354  INFO 33780 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 16:06:51.393  INFO 33780 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 32 ms. Found 2 JPA repository interfaces.
+2026-04-27 16:06:51.790  INFO 33780 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 16:06:51.798  INFO 33780 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 16:06:51.798  INFO 33780 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 16:06:51.932  INFO 33780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 16:06:51.932  INFO 33780 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1052 ms
+2026-04-27 16:06:51.951  INFO 33780 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 16:06:52.118  INFO 33780 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 16:06:52.126  INFO 33780 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 16:06:52.251  INFO 33780 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 16:06:52.299  INFO 33780 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 16:06:52.434  INFO 33780 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 16:06:52.513  INFO 33780 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 16:06:52.960  INFO 33780 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 16:06:52.968  INFO 33780 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:06:53.377  WARN 33780 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 16:06:53.657  INFO 33780 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 16:06:53.665  INFO 33780 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 3.214 seconds (JVM running for 4.121)
+2026-04-27 16:06:56.193  INFO 33780 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:06:56.193  INFO 33780 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 16:06:56.194  INFO 33780 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-04-27 16:06:57.002 DEBUG 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:06:57.003  INFO 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:06:57.003  INFO 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:06:57.008 DEBUG 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34321,108.93965
+2026-04-27 16:06:57.262 ERROR 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
+2026-04-27 16:06:57.266 ERROR 33780 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气异常
 
 java.io.IOException: API 请求失败，HTTP 状态码：400
 	at com.smog.service.WeatherService.getWeatherByCity(WeatherService.java:77) ~[classes/:na]
@@ -289,7 +230,326 @@ java.io.IOException: API 请求失败，HTTP 状态码：400
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
 	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
 
-2026-04-24 16:23:12.772  INFO 27252 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-04-24 16:23:12.773  INFO 27252 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
-2026-04-24 16:23:12.960  INFO 27252 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-04-24 16:23:12.961  INFO 27252 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 16:10:58.109  INFO 33780 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:10:58.109  INFO 33780 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 16:10:58.299  INFO 33780 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 16:10:58.300  INFO 33780 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 16:11:03.839  INFO 36808 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 36808 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 16:11:03.842  INFO 36808 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 16:11:04.265  INFO 36808 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 16:11:04.300  INFO 36808 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 29 ms. Found 2 JPA repository interfaces.
+2026-04-27 16:11:04.671  INFO 36808 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 16:11:04.677  INFO 36808 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 16:11:04.678  INFO 36808 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 16:11:04.791  INFO 36808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 16:11:04.791  INFO 36808 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 909 ms
+2026-04-27 16:11:04.817  INFO 36808 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 16:11:04.951  INFO 36808 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 16:11:04.958  INFO 36808 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 16:11:05.074  INFO 36808 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 16:11:05.108  INFO 36808 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 16:11:05.224  INFO 36808 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 16:11:05.298  INFO 36808 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 16:11:05.697  INFO 36808 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 16:11:05.704  INFO 36808 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:11:06.083  WARN 36808 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 16:11:06.345  INFO 36808 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 16:11:06.351  INFO 36808 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 2.843 seconds (JVM running for 3.613)
+2026-04-27 16:11:13.997  INFO 36808 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:11:13.997  INFO 36808 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 16:11:13.998  INFO 36808 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-27 16:11:14.775 DEBUG 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:11:14.775  INFO 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:11:14.776  INFO 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:11:14.779 DEBUG 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=34.34,108.94
+2026-04-27 16:11:15.029 ERROR 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 和风天气API响应失败，状态码：400
+2026-04-27 16:11:15.033 ERROR 36808 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气异常
+
+java.io.IOException: API 请求失败，HTTP 状态码：400
+	at com.smog.service.WeatherService.getWeatherByCity(WeatherService.java:80) ~[classes/:na]
+	at com.smog.service.WeatherService.getWeatherAndAirQuality(WeatherService.java:252) ~[classes/:na]
+	at com.smog.controller.WeatherController.getWeatherInfo(WeatherController.java:23) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:205) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:150) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1072) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:965) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:898) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:529) ~[tomcat-embed-core-9.0.78.jar:4.0.FR]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.29.jar:5.3.29]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:623) ~[tomcat-embed-core-9.0.78.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:209) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.29.jar:5.3.29]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:481) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:130) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:390) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:926) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1791) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.78.jar:9.0.78]
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+
+2026-04-27 16:14:47.984  INFO 36808 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:14:47.984  INFO 36808 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 16:14:48.189  INFO 36808 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 16:14:48.192  INFO 36808 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 16:14:53.845  INFO 30884 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 30884 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 16:14:53.849  INFO 30884 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 16:14:54.290  INFO 30884 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 16:14:54.328  INFO 30884 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 31 ms. Found 2 JPA repository interfaces.
+2026-04-27 16:14:54.714  INFO 30884 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 16:14:54.721  INFO 30884 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 16:14:54.721  INFO 30884 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 16:14:54.847  INFO 30884 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 16:14:54.847  INFO 30884 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 959 ms
+2026-04-27 16:14:54.867  INFO 30884 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 16:14:55.014  INFO 30884 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 16:14:55.022  INFO 30884 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 16:14:55.156  INFO 30884 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 16:14:55.192  INFO 30884 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 16:14:55.310  INFO 30884 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 16:14:55.382  INFO 30884 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 16:14:55.786  INFO 30884 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 16:14:55.793  INFO 30884 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:14:56.194  WARN 30884 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 16:14:56.451  INFO 30884 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 16:14:56.458  INFO 30884 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 2.954 seconds (JVM running for 3.752)
+2026-04-27 16:14:58.731  INFO 30884 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:14:58.731  INFO 30884 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 16:14:58.732  INFO 30884 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-27 16:14:59.425 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:14:59.425  INFO 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:14:59.425  INFO 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:14:59.428 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 16:14:59.705 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T16:04+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T16:00+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"354","windDir":"北风","windScale":"1","windSpeed":"5","humidity":"27","precip":"0.0","pressure":"967","vis":"16","cloud":"98","dew":"3"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 16:14:59.710  INFO 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 16:14:59.710  INFO 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 16:14:59.713 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 16:14:59.763 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"8b3151c01bd6b4a68fc0a82057983c9c578c6e463803278c9656975915ea95da"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":72,"aqiDisplay":"72","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":16.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":24,"aqiDisplay":"24"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":93.4,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":72,"aqiDisplay":"72"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":10.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":6,"aqiDisplay":"6"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":139.0,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":44,"aqiDisplay":"44"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":7.6,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.48,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 16:14:59.767 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 16:14:59.768 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 16.8
+2026-04-27 16:14:59.776 DEBUG 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 16:14:59.776  INFO 30884 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 16:22:02.230  INFO 30884 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:22:02.230  INFO 30884 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 16:22:02.441  INFO 30884 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 16:22:02.443  INFO 30884 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 16:22:05.833  INFO 23096 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 23096 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 16:22:05.837  INFO 23096 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 16:22:06.350  INFO 23096 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 16:22:06.397  INFO 23096 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 2 JPA repository interfaces.
+2026-04-27 16:22:06.905  INFO 23096 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 16:22:06.916  INFO 23096 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 16:22:06.916  INFO 23096 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 16:22:07.129  INFO 23096 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 16:22:07.130  INFO 23096 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1244 ms
+2026-04-27 16:22:07.165  INFO 23096 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 16:22:07.416  INFO 23096 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 16:22:07.429  INFO 23096 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 16:22:07.642  INFO 23096 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 16:22:07.704  INFO 23096 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 16:22:07.893  INFO 23096 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 16:22:07.995  INFO 23096 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 16:22:08.545  INFO 23096 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 16:22:08.554  INFO 23096 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 16:22:09.034  WARN 23096 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 16:22:09.355  INFO 23096 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 16:22:09.362  INFO 23096 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 3.948 seconds (JVM running for 4.955)
+2026-04-27 16:22:13.228  INFO 23096 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:22:13.229  INFO 23096 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 16:22:13.230  INFO 23096 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-27 16:22:14.049 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:22:14.049  INFO 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:22:14.050  INFO 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:22:14.053 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 16:22:14.325 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T16:21+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T16:18+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"354","windDir":"北风","windScale":"1","windSpeed":"5","humidity":"24","precip":"0.0","pressure":"967","vis":"16","cloud":"98","dew":"3"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 16:22:14.331  INFO 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 16:22:14.331  INFO 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 16:22:14.334 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 16:22:14.387 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"8b3151c01bd6b4a68fc0a82057983c9c578c6e463803278c9656975915ea95da"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":72,"aqiDisplay":"72","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":16.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":24,"aqiDisplay":"24"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":93.4,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":72,"aqiDisplay":"72"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":10.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":6,"aqiDisplay":"6"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":139.0,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":44,"aqiDisplay":"44"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":7.6,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.48,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 16:22:14.392 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 16:22:14.393 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 16.8
+2026-04-27 16:22:14.404 DEBUG 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 16:22:14.404  INFO 23096 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 16:43:32.512 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 16:43:32.512  INFO 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 16:43:32.512  INFO 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 16:43:32.514 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 16:43:32.835 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T16:36+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T16:32+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"297","windDir":"西北风","windScale":"1","windSpeed":"3","humidity":"37","precip":"0.0","pressure":"967","vis":"16","cloud":"99","dew":"8"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 16:43:32.836  INFO 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 16:43:32.837  INFO 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 16:43:32.839 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 16:43:32.885 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"8b3151c01bd6b4a68fc0a82057983c9c578c6e463803278c9656975915ea95da"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":72,"aqiDisplay":"72","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":16.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":24,"aqiDisplay":"24"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":93.4,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":72,"aqiDisplay":"72"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":10.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":6,"aqiDisplay":"6"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":139.0,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":44,"aqiDisplay":"44"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":7.6,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.48,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 16:43:32.886 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 16:43:32.886 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 16.8
+2026-04-27 16:43:32.888 DEBUG 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 16:43:32.888  INFO 23096 --- [http-nio-8080-exec-3] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 17:02:33.469 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 17:02:33.470  INFO 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 17:02:33.470  INFO 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 17:02:33.473 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 17:02:33.803 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T17:00+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T16:58+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"297","windDir":"西北风","windScale":"1","windSpeed":"3","humidity":"24","precip":"0.0","pressure":"967","vis":"16","cloud":"99","dew":"8"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 17:02:33.808  INFO 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 17:02:33.809  INFO 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 17:02:33.835 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 17:02:33.891 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"f92ba8c9023e472e6ea7fb3a4deeb9b96e6fa81a5632390c161677e576800d9f"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":75,"aqiDisplay":"75","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":15.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":23,"aqiDisplay":"23"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":99.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":75,"aqiDisplay":"75"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":12.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":7,"aqiDisplay":"7"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":134.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":42,"aqiDisplay":"42"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":6.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.46,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 17:02:33.901 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 17:02:33.901 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 15.8
+2026-04-27 17:02:33.911 DEBUG 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 17:02:33.912  INFO 23096 --- [http-nio-8080-exec-8] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 17:02:46.919  INFO 23096 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:02:46.920  INFO 23096 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 17:02:47.124  INFO 23096 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 17:02:47.124  INFO 23096 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 17:02:53.100  INFO 15836 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 15836 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 17:02:53.103  INFO 15836 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 17:02:53.719  INFO 15836 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 17:02:53.765  INFO 15836 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 2 JPA repository interfaces.
+2026-04-27 17:02:54.236  INFO 15836 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 17:02:54.245  INFO 15836 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 17:02:54.245  INFO 15836 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 17:02:54.383  INFO 15836 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 17:02:54.384  INFO 15836 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1233 ms
+2026-04-27 17:02:54.413  INFO 15836 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 17:02:54.625  INFO 15836 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 17:02:54.634  INFO 15836 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 17:02:54.824  INFO 15836 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 17:02:54.886  INFO 15836 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 17:02:55.073  INFO 15836 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 17:02:55.179  INFO 15836 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 17:02:55.689  INFO 15836 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 17:02:55.697  INFO 15836 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:02:56.160  WARN 15836 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 17:02:56.470  INFO 15836 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 17:02:56.478  INFO 15836 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 3.771 seconds (JVM running for 4.663)
+2026-04-27 17:02:56.973  INFO 15836 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 17:02:56.973  INFO 15836 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 17:02:56.974  INFO 15836 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-27 17:02:57.850 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 17:02:57.851  INFO 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 17:02:57.851  INFO 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 17:02:57.854 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 17:02:58.128 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T17:00+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T16:58+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"297","windDir":"西北风","windScale":"1","windSpeed":"3","humidity":"24","precip":"0.0","pressure":"967","vis":"16","cloud":"99","dew":"8"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 17:02:58.134  INFO 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 17:02:58.134  INFO 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 17:02:58.136 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 17:02:58.188 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"f92ba8c9023e472e6ea7fb3a4deeb9b96e6fa81a5632390c161677e576800d9f"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":75,"aqiDisplay":"75","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":15.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":23,"aqiDisplay":"23"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":99.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":75,"aqiDisplay":"75"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":12.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":7,"aqiDisplay":"7"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":134.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":42,"aqiDisplay":"42"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":6.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.46,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 17:02:58.193 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 17:02:58.194 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 15.8
+2026-04-27 17:02:58.202 DEBUG 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 17:02:58.202  INFO 15836 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 17:09:33.687  INFO 15836 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:09:33.688  INFO 15836 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 17:09:34.007  INFO 15836 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 17:09:34.010  INFO 15836 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 17:09:39.893  INFO 36424 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 36424 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 17:09:39.897  INFO 36424 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 17:09:40.367  INFO 36424 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 17:09:40.406  INFO 36424 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 33 ms. Found 2 JPA repository interfaces.
+2026-04-27 17:09:40.786  INFO 36424 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 17:09:40.793  INFO 36424 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 17:09:40.793  INFO 36424 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 17:09:40.918  INFO 36424 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 17:09:40.918  INFO 36424 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 979 ms
+2026-04-27 17:09:40.937  INFO 36424 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 17:09:41.077  INFO 36424 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 17:09:41.085  INFO 36424 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 17:09:41.203  INFO 36424 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 17:09:41.238  INFO 36424 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 17:09:41.365  INFO 36424 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 17:09:41.439  INFO 36424 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 17:09:41.847  INFO 36424 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 17:09:41.855  INFO 36424 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:09:42.298  WARN 36424 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 17:09:42.582  INFO 36424 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 17:09:42.591  INFO 36424 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 3.083 seconds (JVM running for 3.973)
+2026-04-27 17:09:47.229  INFO 36424 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 17:09:47.229  INFO 36424 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 17:09:47.230  INFO 36424 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-27 17:09:47.919 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 17:09:47.920  INFO 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 17:09:47.920  INFO 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 17:09:47.922 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 17:09:48.198 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T17:04+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T17:00+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"297","windDir":"西北风","windScale":"1","windSpeed":"3","humidity":"24","precip":"0.0","pressure":"967","vis":"16","cloud":"99","dew":"8"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 17:09:48.203  INFO 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 17:09:48.204  INFO 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 17:09:48.207 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 17:09:48.251 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"f92ba8c9023e472e6ea7fb3a4deeb9b96e6fa81a5632390c161677e576800d9f"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":75,"aqiDisplay":"75","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":15.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":23,"aqiDisplay":"23"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":99.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":75,"aqiDisplay":"75"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":12.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":7,"aqiDisplay":"7"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":134.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":42,"aqiDisplay":"42"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":6.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.46,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 17:09:48.255 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 17:09:48.256 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 15.8
+2026-04-27 17:09:48.264 DEBUG 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 17:09:48.264  INFO 36424 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 17:12:25.284  INFO 36424 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:12:25.285  INFO 36424 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 17:12:25.484  INFO 36424 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 17:12:25.485  INFO 36424 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-27 17:12:31.679  INFO 23824 --- [main] com.smog.SmogApplication                 : Starting SmogApplication using Java 21.0.2 on LAPTOP-2FM7SFNU with PID 23824 (E:\GitHub\WeatherInMyHand\backend\target\classes started by 程培昊 in E:\GitHub\WeatherInMyHand)
+2026-04-27 17:12:31.682  INFO 23824 --- [main] com.smog.SmogApplication                 : No active profile set, falling back to 1 default profile: "default"
+2026-04-27 17:12:32.144  INFO 23824 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-27 17:12:32.181  INFO 23824 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 30 ms. Found 2 JPA repository interfaces.
+2026-04-27 17:12:32.680  INFO 23824 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 17:12:32.690  INFO 23824 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 17:12:32.690  INFO 23824 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+2026-04-27 17:12:32.835  INFO 23824 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-27 17:12:32.836  INFO 23824 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1113 ms
+2026-04-27 17:12:32.857  INFO 23824 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-27 17:12:33.004  INFO 23824 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-27 17:12:33.012  INFO 23824 --- [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:smogdb'
+2026-04-27 17:12:33.130  INFO 23824 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-27 17:12:33.168  INFO 23824 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
+2026-04-27 17:12:33.286  INFO 23824 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-04-27 17:12:33.359  INFO 23824 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-04-27 17:12:33.775  INFO 23824 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-04-27 17:12:33.782  INFO 23824 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:12:34.178  WARN 23824 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-27 17:12:34.455  INFO 23824 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2026-04-27 17:12:34.462  INFO 23824 --- [main] com.smog.SmogApplication                 : Started SmogApplication in 3.135 seconds (JVM running for 3.911)
+2026-04-27 17:12:36.429  INFO 23824 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 17:12:36.429  INFO 23824 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-27 17:12:36.430  INFO 23824 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-04-27 17:12:37.124 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 位置信息有效：经度=108.93965, 纬度=34.34321
+2026-04-27 17:12:37.124  INFO 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : ========== 开始获取综合天气与空气质量，城市：西安 ==========
+2026-04-27 17:12:37.124  INFO 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取实时天气
+2026-04-27 17:12:37.127 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 请求URL: https://nx4nmurq3h.re.qweatherapi.com/v7/weather/now?location=108.94,34.34
+2026-04-27 17:12:37.410 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气响应体：{"code":"200","updateTime":"2026-04-27T17:04+08:00","fxLink":"https://www.qweather.com/weather/weiyang-101110112.html","now":{"obsTime":"2026-04-27T17:00+08:00","temp":"25","feelsLike":"23","icon":"104","text":"阴","wind360":"297","windDir":"西北风","windScale":"1","windSpeed":"3","humidity":"24","precip":"0.0","pressure":"967","vis":"16","cloud":"99","dew":"8"},"refer":{"sources":["QWeather"],"license":["QWeather Developers License"]}}
+2026-04-27 17:12:37.415  INFO 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 实时天气获取成功，温度=25.0，天气=阴
+2026-04-27 17:12:37.415  INFO 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 获取空气质量，经度：108.93965，纬度：34.34321，城市名：西安
+2026-04-27 17:12:37.418 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量请求URL: https://nx4nmurq3h.re.qweatherapi.com/airquality/v1/current/34.34321/108.93965
+2026-04-27 17:12:37.475 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量响应体：{"metadata":{"tag":"f92ba8c9023e472e6ea7fb3a4deeb9b96e6fa81a5632390c161677e576800d9f"},"indexes":[{"code":"cn-mee","name":"AQI (CN)","aqi":75,"aqiDisplay":"75","level":"2","category":"良","color":{"red":255,"green":255,"blue":0,"alpha":1},"primaryPollutant":{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）"},"health":{"effect":"空气质量可接受，但某些污染物可能对极少数异常敏感人群健康有较弱影响。","advice":{"generalPopulation":"一般人群可正常活动。","sensitivePopulation":"极少数异常敏感人群应减少户外活动。"}}}],"pollutants":[{"code":"pm2p5","name":"PM 2.5","fullName":"颗粒物（粒径小于等于2.5µm）","concentration":{"value":15.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":23,"aqiDisplay":"23"}]},{"code":"pm10","name":"PM 10","fullName":"颗粒物（粒径小于等于10µm）","concentration":{"value":99.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":75,"aqiDisplay":"75"}]},{"code":"no2","name":"NO2","fullName":"二氧化氮","concentration":{"value":12.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":7,"aqiDisplay":"7"}]},{"code":"o3","name":"O3","fullName":"臭氧","concentration":{"value":134.2,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":42,"aqiDisplay":"42"}]},{"code":"so2","name":"SO2","fullName":"二氧化硫","concentration":{"value":6.8,"unit":"μg/m³"},"subIndexes":[{"code":"cn-mee","aqi":3,"aqiDisplay":"3"}]},{"code":"co","name":"CO","fullName":"一氧化碳","concentration":{"value":0.46,"unit":"mg/m³"},"subIndexes":[{"code":"cn-mee","aqi":5,"aqiDisplay":"5"}]}],"stations":[{"id":"P57895","name":"广运潭"},{"id":"P526569","name":"行知小学"},{"id":"P51400","name":"兴庆小区"},{"id":"P53013","name":"市人民体育场"},{"id":"P57728","name":"经开区"}]}
+2026-04-27 17:12:37.480 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量指数解析完成，AQI(US): null
+2026-04-27 17:12:37.480 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 污染物浓度解析完成，PM2.5: 15.8
+2026-04-27 17:12:37.489 DEBUG 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 合并空气质量字段完成
+2026-04-27 17:12:37.489  INFO 23824 --- [http-nio-8080-exec-1] com.smog.service.WeatherService          : 空气质量数据合并完成，AQI=null
+2026-04-27 17:20:44.839  INFO 23824 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-27 17:20:44.839  INFO 23824 --- [SpringApplicationShutdownHook] .SchemaDropperImpl$DelayedDropActionImpl : HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-04-27 17:20:45.041  INFO 23824 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-27 17:20:45.042  INFO 23824 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

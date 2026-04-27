@@ -63,6 +63,9 @@ public class Weather {
     private Integer aqiUs;            // 美国标准 AQI (us-epa)
 
     @Column
+    private Integer aqiCN;           //中国标准AQI
+
+    @Column
     private BigDecimal aqiQa;         // QAQI 指数（和风自研，小数）
 
     @Column
@@ -138,6 +141,8 @@ public class Weather {
     public void setAqi(Integer aqi) { this.aqi = aqi; }
     public Integer getAqiUs() { return aqiUs; }
     public void setAqiUs(Integer aqiUs) { this.aqiUs = aqiUs; }
+    public void setAqiCN(Integer aqiCN) { this.aqiCN = aqiCN; }
+    public Integer getAqiCN() { return aqiCN; }
     public BigDecimal getAqiQa() { return aqiQa; }
     public void setAqiQa(BigDecimal aqiQa) { this.aqiQa = aqiQa; }
     public String getAirQuality() { return airQuality; }
