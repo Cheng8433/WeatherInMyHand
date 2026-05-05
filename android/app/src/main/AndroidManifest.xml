@@ -10,7 +10,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="雾霾探测"
+        android:label="掌中天气"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherApp"
         android:usesCleartextTraffic="true"

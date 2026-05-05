@@ -10,6 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -19,7 +21,7 @@ import okhttp3.Response;
 
 public class WeatherDetailActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "http://10.198.105.198/api/";
+    private static final String BASE_URL = "http://10.198.101.242:8080/api/";
 
     private TextView tvDetailCity, tvAssessment, tvDetailAqi, tvDetailAirQuality;
     private TextView tvDetailPm25, tvDetailPm10, tvDetailWeather;
@@ -36,7 +38,6 @@ public class WeatherDetailActivity extends AppCompatActivity {
         city = getIntent().getStringExtra("city");
         initViews();
         loadWeatherDetail();
-        // 温湿度趋势图表已移除
     }
 
     private void initViews() {
@@ -54,18 +55,22 @@ public class WeatherDetailActivity extends AppCompatActivity {
         tvDetailCity.setText(city + "天气详情");
     }
 
-    /**
-     * 加载当前天气详情（AQI、温度、湿度等）
-     */
     private void loadWeatherDetail() {
+        String encodedCity;
+        try {
+            encodedCity = URLEncoder.encode(city, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            encodedCity = city;
+        }
         Request request = new Request.Builder()
-                .url(BASE_URL + "weather/info?city=" + city)
+                .url(BASE_URL + "weather/info?city=" + encodedCity)
                 .build();
 
         httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "网络请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this,
+                        "网络请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
 
             @Override
@@ -79,22 +84,22 @@ public class WeatherDetailActivity extends AppCompatActivity {
                             JSONObject data = json.optJSONObject("data");
                             runOnUiThread(() -> updateUI(data));
                         } else {
-                            runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "获取天气数据失败", Toast.LENGTH_SHORT).show());
+                            runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this,
+                                    "获取天气数据失败", Toast.LENGTH_SHORT).show());
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "天气数据解析错误", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this,
+                                "天气数据解析错误", Toast.LENGTH_SHORT).show());
                     }
                 } else {
-                    runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "服务器响应错误: " + response.code(), Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this,
+                            "服务器响应错误: " + response.code(), Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
 
-    /**
-     * 更新界面上的天气信息
-     */
     private void updateUI(JSONObject data) {
         if (data == null) return;
 
