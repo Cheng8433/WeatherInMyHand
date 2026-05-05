@@ -21,7 +21,7 @@ import okhttp3.Response;
 
 public class WeatherDetailActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "http://10.198.101.242:8080/api/";
+    private static final String BASE_URL = BuildConfig.BACK_HOST_API;
 
     private TextView tvDetailCity, tvAssessment, tvDetailAqi, tvDetailAirQuality;
     private TextView tvDetailPm25, tvDetailPm10, tvDetailWeather;

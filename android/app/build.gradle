@@ -4,12 +4,17 @@ android {
     namespace 'com.smog.weatherapp'
     compileSdk 34
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId "com.smog.weatherapp"
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "BACK_HOST_API", "\"http://10.198.168.115:8080/api/\""
     }
 
     buildTypes {

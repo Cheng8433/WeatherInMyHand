@@ -1,6 +1,7 @@
 package com.smog.midwdget;
 
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
@@ -18,9 +19,12 @@ public class JwtUtil {
     // 项目ID (Project ID)
     private static final String projectId = "2N8569G9JK";
 
+    @Value("${private.pem.path}")
+    private String privatePemPath;   // 从配置文件注入
+
     public String generateToken() {
         try {
-            String privateKeyContent = new String(Files.readAllBytes(Paths.get("E:\\github_test\\WeatherInMyHand\\backend\\ed25519-private.pem")))
+            String privateKeyContent = new String(Files.readAllBytes(Paths.get(privatePemPath)))
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s", "");
