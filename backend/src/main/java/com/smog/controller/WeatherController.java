@@ -3,6 +3,7 @@ package com.smog.controller;
 import com.smog.entity.Weather;
 import com.smog.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class WeatherController {
             result.put("success", false);
             result.put("message", e.getMessage());
         }
-        return result;
+        return ResponseEntity.ok(result).getBody();
     }
 
     @GetMapping("/air")
