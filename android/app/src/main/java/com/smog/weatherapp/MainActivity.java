@@ -39,7 +39,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-    private static final String BASE_URL = "http://10.198.101.242:8080/api/";
+    private static final String BASE_URL = BuildConfig.BACK_HOST_API;
 
     private TextView tvCityName, tvAqi, tvAirQuality, tvPm25, tvPm10, tvWeather, tvTemperature, tvHumidity;
 

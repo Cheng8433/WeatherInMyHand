@@ -1,17 +1,20 @@
 buildscript {
     repositories {
-        google()           // 下载 Android Gradle 插件
-        mavenCentral()     // 备用仓库
+        google()
+        mavenCentral()
+        // 添加 jitpack 以便下载 dotenv-android 插件
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.0'
+
     }
 }
 
 allprojects {
     repositories {
-        google()           // 下载 androidx、material 等
-        mavenCentral()     // 下载 okhttp 等
-        maven { url 'https://jitpack.io' }   // 下载 mpandroidchart（必须）
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
