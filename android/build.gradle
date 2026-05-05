@@ -1,40 +1,17 @@
-// build.gradle
 buildscript {
     repositories {
-        google()
-        mavenCentral()
+        google()           // 下载 Android Gradle 插件
+        mavenCentral()     // 备用仓库
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.0'
     }
 }
 
-apply plugin: 'com.android.application'
-
-android {
-    namespace 'com.smog.weatherapp'
-    compileSdk 34
-
-    defaultConfig {
-        applicationId "com.smog.weatherapp"
-        minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+allprojects {
+    repositories {
+        google()           // 下载 androidx、material 等
+        mavenCentral()     // 下载 okhttp 等
+        maven { url 'https://jitpack.io' }   // 下载 mpandroidchart（必须）
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
-    }
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    implementation 'com.github.mikephil.charting:mpandroidchart:3.1.0'
 }

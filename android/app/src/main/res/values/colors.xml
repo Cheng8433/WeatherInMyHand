@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="white">#FFFFFF</color>
+    <!-- 如果你还需要其他颜色，可以继续添加 -->
+    <color name="black">#000000</color>
+    <color name="background">#F8F9FA</color>
+    <color name="gradient_start">#2196F3</color>
+    <color name="gradient_end">#0D47A1</color>
+</resources>

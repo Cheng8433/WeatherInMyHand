@@ -1,24 +1,15 @@
 package com.smog.weatherapp;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -28,15 +19,13 @@ import okhttp3.Response;
 
 public class WeatherDetailActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "http://10.0.2.2:8080/api/";
+    private static final String BASE_URL = "http://10.198.105.198/api/";
 
     private TextView tvDetailCity, tvAssessment, tvDetailAqi, tvDetailAirQuality;
     private TextView tvDetailPm25, tvDetailPm10, tvDetailWeather;
     private TextView tvDetailTemperature, tvDetailHumidity, tvHealthAdvice;
-    private LineChart lineChart;
 
     private OkHttpClient httpClient = new OkHttpClient();
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
     private String city;
 
     @Override
@@ -47,6 +36,7 @@ public class WeatherDetailActivity extends AppCompatActivity {
         city = getIntent().getStringExtra("city");
         initViews();
         loadWeatherDetail();
+        // 温湿度趋势图表已移除
     }
 
     private void initViews() {
@@ -60,41 +50,13 @@ public class WeatherDetailActivity extends AppCompatActivity {
         tvDetailTemperature = findViewById(R.id.tvDetailTemperature);
         tvDetailHumidity = findViewById(R.id.tvDetailHumidity);
         tvHealthAdvice = findViewById(R.id.tvHealthAdvice);
-        lineChart = findViewById(R.id.lineChart);
 
         tvDetailCity.setText(city + "天气详情");
-        setupChart();
     }
 
-    private void setupChart() {
-        lineChart.getDescription().setEnabled(false);
-        lineChart.setTouchEnabled(true);
-        lineChart.setDragEnabled(true);
-        lineChart.setScaleEnabled(true);
-
-        XAxis xAxis = lineChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
-        List<Entry> tempEntries = new ArrayList<>();
-        List<Entry> humidityEntries = new ArrayList<>();
-
-        for (int i = 0; i < 24; i++) {
-            tempEntries.add(new Entry(i, (float) (15 + Math.random() * 10)));
-            humidityEntries.add(new Entry(i, (float) (40 + Math.random() * 40)));
-        }
-
-        LineDataSet tempDataSet = new LineDataSet(tempEntries, "温度(°C)");
-        tempDataSet.setColor(0xFFE91E63);
-        tempDataSet.setDrawCircles(false);
-
-        LineDataSet humidityDataSet = new LineDataSet(humidityEntries, "湿度(%)");
-        humidityDataSet.setColor(0xFF2196F3);
-        humidityDataSet.setDrawCircles(false);
-
-        lineChart.setData(new LineData(tempDataSet, humidityDataSet));
-        lineChart.invalidate();
-    }
-
+    /**
+     * 加载当前天气详情（AQI、温度、湿度等）
+     */
     private void loadWeatherDetail() {
         Request request = new Request.Builder()
                 .url(BASE_URL + "weather/info?city=" + city)
@@ -103,24 +65,36 @@ public class WeatherDetailActivity extends AppCompatActivity {
         httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                mainHandler.post(() -> Toast.makeText(WeatherDetailActivity.this, "加载失败", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "网络请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String body = response.body().string();
-                    JSONObject json = new JSONObject(body);
-                    boolean success = json.optBoolean("success", false);
-                    if (success) {
-                        JSONObject data = json.optJSONObject("data");
-                        mainHandler.post(() -> updateUI(data));
+                    try {
+                        String body = response.body().string();
+                        JSONObject json = new JSONObject(body);
+                        boolean success = json.optBoolean("success", false);
+                        if (success) {
+                            JSONObject data = json.optJSONObject("data");
+                            runOnUiThread(() -> updateUI(data));
+                        } else {
+                            runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "获取天气数据失败", Toast.LENGTH_SHORT).show());
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "天气数据解析错误", Toast.LENGTH_SHORT).show());
                     }
+                } else {
+                    runOnUiThread(() -> Toast.makeText(WeatherDetailActivity.this, "服务器响应错误: " + response.code(), Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
 
+    /**
+     * 更新界面上的天气信息
+     */
     private void updateUI(JSONObject data) {
         if (data == null) return;
 
@@ -132,8 +106,10 @@ public class WeatherDetailActivity extends AppCompatActivity {
         tvDetailPm25.setText(data.optString("pm25", "--"));
         tvDetailPm10.setText(data.optString("pm10", "--"));
         tvDetailWeather.setText(data.optString("weather", "--"));
-        tvDetailTemperature.setText(data.optDouble("temperature", 0) + "°C");
-        tvDetailHumidity.setText(data.optDouble("humidity", 0) + "%");
+        double temp = data.optDouble("temperature", 0);
+        tvDetailTemperature.setText(String.format("%.1f°C", temp));
+        double humidity = data.optDouble("humidity", 0);
+        tvDetailHumidity.setText(String.format("%.1f%%", humidity));
 
         tvAssessment.setText(getAssessment(aqi));
         tvHealthAdvice.setText(getHealthAdvice(aqi));
