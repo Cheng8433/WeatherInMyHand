@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
+    <!-- 原styles.xml引用的颜色 -->
+    <color name="purple_500">#9C27B0</color>
+    <color name="purple_700">#7B1FA2</color>
+    <color name="teal_200">#80CBC4</color>
     <color name="white">#FFFFFF</color>
-    <!-- 如果你还需要其他颜色，可以继续添加 -->
-    <color name="black">#000000</color>
-    <color name="background">#F8F9FA</color>
+    
+    <!-- activity_main.xml引用的颜色 -->
+    <color name="primary">#2196F3</color>
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#666666</color>
+    <color name="background">#f5f5f5</color>
+    
+    <!-- 渐变颜色 (不再使用，但保留以防引用) -->
     <color name="gradient_start">#2196F3</color>
-    <color name="gradient_end">#0D47A1</color>
+    <color name="gradient_end">#1976D2</color>
+    
+    <!-- AQI Colors -->
+    <color name="aqi_excellent">#4CAF50</color>
+    <color name="aqi_good">#FFEB3B</color>
+    <color name="aqi_light_pollution">#FF9800</color>
+    <color name="aqi_moderate_pollution">#F44336</color>
+    <color name="aqi_heavy_pollution">#9C27B0</color>
+    
+    <!-- Light green for top area and search button -->
+    <color name="light_green">#C8E6C9</color>
+    
+    <!-- Light blue for ActionBar background -->
+    <color name="light_blue">#BBDEFB</color>
 </resources>

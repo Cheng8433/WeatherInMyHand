@@ -2,8 +2,8 @@
     <!-- 基础主题，继承自 AppCompat -->
     <style name="Theme.WeatherApp" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- 在这里可以自定义颜色、字体等 -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/aqi_excellent</item>
+        <item name="colorPrimaryVariant">@color/aqi_excellent</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- 其他属性 -->
     </style>
