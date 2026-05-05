@@ -6,18 +6,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -27,12 +19,11 @@ import okhttp3.Response;
 
 public class WeatherDetailActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "http://10.0.2.2:8080/api/";
+    private static final String BASE_URL = "http://10.198.105.198/api/";
 
     private TextView tvDetailCity, tvAssessment, tvDetailAqi, tvDetailAirQuality;
     private TextView tvDetailPm25, tvDetailPm10, tvDetailWeather;
     private TextView tvDetailTemperature, tvDetailHumidity, tvHealthAdvice;
-    private LineChart lineChart;
 
     private OkHttpClient httpClient = new OkHttpClient();
     private String city;
@@ -45,6 +36,7 @@ public class WeatherDetailActivity extends AppCompatActivity {
         city = getIntent().getStringExtra("city");
         initViews();
         loadWeatherDetail();
+        // 温湿度趋势图表已移除
     }
 
     private void initViews() {
@@ -58,52 +50,8 @@ public class WeatherDetailActivity extends AppCompatActivity {
         tvDetailTemperature = findViewById(R.id.tvDetailTemperature);
         tvDetailHumidity = findViewById(R.id.tvDetailHumidity);
         tvHealthAdvice = findViewById(R.id.tvHealthAdvice);
-        lineChart = findViewById(R.id.lineChart);
 
         tvDetailCity.setText(city + "天气详情");
-        setupChart(); // 仅配置图表样式，数据稍后填充（真实数据需后端提供）
-    }
-
-    /**
-     * 配置折线图样式（X轴标签等）
-     * 注意：当前使用随机模拟数据演示，实际应用应改为真实小时数据接口
-     */
-    private void setupChart() {
-        lineChart.getDescription().setEnabled(false);
-        lineChart.setTouchEnabled(true);
-        lineChart.setDragEnabled(true);
-        lineChart.setScaleEnabled(true);
-
-        XAxis xAxis = lineChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        // 可选：设置 X 轴标签为 0时 ~ 23时
-        String[] hours = new String[24];
-        for (int i = 0; i < 24; i++) hours[i] = i + "时";
-        xAxis.setValueFormatter(new com.github.mikephil.charting.formatter.IndexAxisValueFormatter(hours));
-
-        // 模拟数据（实际应调用后端接口获取真实小时数据）
-        List<Entry> tempEntries = new ArrayList<>();
-        List<Entry> humidityEntries = new ArrayList<>();
-        for (int i = 0; i < 24; i++) {
-            // 模拟一天温度变化（正弦波），比纯随机更合理
-            double temp = 15 + 8 * Math.sin((i - 14) * Math.PI / 12);
-            double humidity = 50 + 20 * Math.sin((i - 8) * Math.PI / 12);
-            tempEntries.add(new Entry(i, (float) temp));
-            humidityEntries.add(new Entry(i, (float) humidity));
-        }
-
-        LineDataSet tempDataSet = new LineDataSet(tempEntries, "温度(°C)");
-        tempDataSet.setColor(0xFFE91E63);
-        tempDataSet.setDrawCircles(false);
-        tempDataSet.setLineWidth(2f);
-
-        LineDataSet humidityDataSet = new LineDataSet(humidityEntries, "湿度(%)");
-        humidityDataSet.setColor(0xFF2196F3);
-        humidityDataSet.setDrawCircles(false);
-        humidityDataSet.setLineWidth(2f);
-
-        lineChart.setData(new LineData(tempDataSet, humidityDataSet));
-        lineChart.invalidate(); // 刷新图表
     }
 
     /**
@@ -125,7 +73,7 @@ public class WeatherDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     try {
                         String body = response.body().string();
-                        JSONObject json = new JSONObject(body);   // 可能抛出 JSONException
+                        JSONObject json = new JSONObject(body);
                         boolean success = json.optBoolean("success", false);
                         if (success) {
                             JSONObject data = json.optJSONObject("data");

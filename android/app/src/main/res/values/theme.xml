@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- 基础主题，继承自 AppCompat -->
-    <style name="Theme.WeatherApp" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.WeatherApp" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- 在这里可以自定义颜色、字体等 -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>

@@ -279,4 +279,44 @@ public class WeatherService {
         target.setUpdateTime(System.currentTimeMillis());
         log.debug("合并空气质量字段完成");
     }
+
+    /**
+     * 根据经纬度获取天气和空气质量（内部会先逆地理编码获取城市名）
+     */
+    public Weather getWeatherAndAirQualityByLatLon(double lat, double lon) throws IOException {
+        // 1. 调用和风逆地理编码获取城市名
+        String cityName = getCityNameByLatLon(lat, lon);
+        // 2. 再用城市名获取天气（或者直接用经纬度获取，但现有方法已支持）
+        return getWeatherAndAirQuality(cityName);
+    }
+
+    /**
+     * 仅根据经纬度获取城市名（逆地理编码）
+     */
+    private String getCityNameByLatLon(double lat, double lon) throws IOException {
+        String token = jwtUtil.generateToken();
+        String locationParam = lon + "," + lat;
+        String url = API_HOST + "/geo/v2/city/lookup?location=" + locationParam;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("逆地理编码失败，状态码：" + response.code());
+            }
+            String body = response.body().string();
+            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+            if (!"200".equals(json.get("code").getAsString())) {
+                throw new IOException("逆地理编码错误，code：" + json.get("code").getAsString());
+            }
+            JsonArray locations = json.getAsJsonArray("location");
+            if (locations.size() == 0) {
+                throw new IOException("未找到对应城市");
+            }
+            return locations.get(0).getAsJsonObject().get("name").getAsString();
+        }
+    }
 }

@@ -128,4 +128,54 @@ public class LocationService {
     public Location getLocationFromDB(String cityName) {
         return locationRepository.findTopByCityNameOrderByUpdateTimeDesc(cityName).orElse(null);
     }
+
+    // 在 LocationService 中添加以下方法
+
+    /**
+     * 根据经纬度保存位置（调用和风天气逆地理编码获取城市名）
+     * @param lat 纬度
+     * @param lon 经度
+     * @return 保存后的 Location
+     */
+    public Location saveLocationByLatLon(double lat, double lon) throws IOException {
+        // 使用和风天气的城市查询API的反向解析？和风有单独的逆地理编码接口：geo/v2/city/lookup?location=经度,纬度
+        // 注意：和风天气的 city/lookup 支持传入 "经度,纬度" 进行反向查找
+        String token = jwtUtil.generateToken();
+        String locationParam = lon + "," + lat; // 经度在前，纬度在后
+        String url = API_HOST + "/geo/v2/city/lookup?location=" + locationParam;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("逆地理编码 API 请求失败，HTTP 状态码：" + response.code());
+            }
+            String body = response.body().string();
+            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+
+            if (!json.has("code") || !"200".equals(json.get("code").getAsString())) {
+                String errCode = json.has("code") ? json.get("code").getAsString() : "未知";
+                throw new IOException("和风天气 API 错误，code：" + errCode);
+            }
+
+            if (!json.has("location") || json.getAsJsonArray("location").size() == 0) {
+                throw new IOException("未找到经纬度对应的城市");
+            }
+
+            JsonArray locations = json.getAsJsonArray("location");
+            JsonObject first = locations.get(0).getAsJsonObject();
+            String cityName = first.get("name").getAsString();
+
+            Location location = new Location();
+            location.setCityName(cityName);
+            location.setLatitude(lat);
+            location.setLongitude(lon);
+            location.setUpdateTime(System.currentTimeMillis());
+
+            return locationRepository.save(location);
+        }
+    }
 }
