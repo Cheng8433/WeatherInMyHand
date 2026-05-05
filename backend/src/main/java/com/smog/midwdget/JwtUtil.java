@@ -20,7 +20,7 @@ public class JwtUtil {
 
     public String generateToken() {
         try {
-            String privateKeyContent = new String(Files.readAllBytes(Paths.get("E:\\GitHub\\WeatherInMyHand\\backend\\ed25519-private.pem")))
+            String privateKeyContent = new String(Files.readAllBytes(Paths.get("E:\\github_test\\WeatherInMyHand\\backend\\ed25519-private.pem")))
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s", "");
