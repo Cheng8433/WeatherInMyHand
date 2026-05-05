@@ -1,6 +1,7 @@
 package com.smog.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.smog.entity.Location;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 @Service
 public class WeatherService {
@@ -40,9 +40,6 @@ public class WeatherService {
 
     private static final String API_HOST = "https://nx4nmurq3h.re.qweatherapi.com";
 
-    public String getToken() {
-        return jwtUtil.generateToken();
-    }
 
     @Deprecated
     public Location saveLocation(String cityName, Double latitude, Double longitude) {
@@ -60,10 +57,9 @@ public class WeatherService {
 
     // ==================== 实时天气 API ====================
 
-    public Weather getWeatherByCity(double latitude, double longitude,String cityName) throws IOException {
+    public Weather getWeatherByCity(double latitude, double longitude, String cityName) throws IOException {
         log.info("获取实时天气");
         String token = jwtUtil.generateToken();
-        // 保留小数点后两位
         String latStr = String.format("%.2f", latitude);
         String lonStr = String.format("%.2f", longitude);
         String url = API_HOST + "/v7/weather/now?location=" + lonStr + "," + latStr;
@@ -81,31 +77,50 @@ public class WeatherService {
             }
             String body = response.body().string();
             log.debug("实时天气响应体：{}", body);
-            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+            JsonElement rootElement = JsonParser.parseString(body);
+            if (!rootElement.isJsonObject()) {
+                throw new IOException("响应不是有效的 JSON 对象");
+            }
+            JsonObject json = rootElement.getAsJsonObject();
 
-            if (json.has("code") && !"200".equals(json.get("code").getAsString())) {
-                log.error("和风天气API返回错误码：{}", json.get("code").getAsString());
-                throw new IOException("和风天气 API 错误，code：" + json.get("code").getAsString());
+            String code = getString(json, "code");
+            if (!"200".equals(code)) {
+                log.error("和风天气API返回错误码：{}", code);
+                throw new IOException("和风天气 API 错误，code：" + code);
             }
 
             Weather weather = new Weather();
             weather.setCityName(cityName);
             weather.setUpdateTime(System.currentTimeMillis());
 
-            if (json.has("now")) {
-                JsonObject now = json.getAsJsonObject("now");
-                if (now.has("text")) weather.setWeather(now.get("text").getAsString());
-                if (now.has("temp")) weather.setTemperature(now.get("temp").getAsDouble());
-                if (now.has("feelsLike")) weather.setFeelsLike(now.get("feelsLike").getAsDouble());
-                if (now.has("humidity")) weather.setHumidity(now.get("humidity").getAsDouble());
-                if (now.has("windDir")) weather.setWindDir(now.get("windDir").getAsString());
-                if (now.has("windScale")) weather.setWindScale(now.get("windScale").getAsString());
-                if (now.has("windSpeed")) weather.setWindSpeed(now.get("windSpeed").getAsDouble());
-                if (now.has("precip")) weather.setPrecip(now.get("precip").getAsDouble());
-                if (now.has("pressure")) weather.setPressure(now.get("pressure").getAsDouble());
-                if (now.has("vis")) weather.setVis(now.get("vis").getAsDouble());
-                if (now.has("cloud")) weather.setCloud(now.get("cloud").getAsString());
-                if (now.has("dew")) weather.setDew(now.get("dew").getAsDouble());
+            JsonObject now = getJsonObject(json, "now");
+            if (now != null) {
+                if (now.has("text") && now.get("text").isJsonPrimitive())
+                    weather.setWeather(now.get("text").getAsString());
+                Double temp = getDouble(now, "temp");
+                if (temp != null) weather.setTemperature(temp);
+                Double feelsLike = getDouble(now, "feelsLike");
+                if (feelsLike != null) weather.setFeelsLike(feelsLike);
+                Double humidity = getDouble(now, "humidity");
+                if (humidity != null) weather.setHumidity(humidity);
+                String windDir = getString(now, "windDir");
+                if (windDir != null) weather.setWindDir(windDir);
+                String windScale = getString(now, "windScale");
+                if (windScale != null) weather.setWindScale(windScale);
+                Double windSpeed = getDouble(now, "windSpeed");
+                if (windSpeed != null) weather.setWindSpeed(windSpeed);
+                Double precip = getDouble(now, "precip");
+                if (precip != null) weather.setPrecip(precip);
+                Double pressure = getDouble(now, "pressure");
+                if (pressure != null) weather.setPressure(pressure);
+                Double vis = getDouble(now, "vis");
+                if (vis != null) weather.setVis(vis);
+                String cloud = getString(now, "cloud");
+                if (cloud != null) weather.setCloud(cloud);
+                Double dew = getDouble(now, "dew");
+                if (dew != null) weather.setDew(dew);
+            } else {
+                log.warn("实时天气响应中没有 'now' 字段");
             }
 
             return weatherRepository.save(weather);
@@ -135,14 +150,20 @@ public class WeatherService {
             }
             String body = response.body().string();
             log.debug("空气质量响应体：{}", body);
-            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+            JsonElement rootElement = JsonParser.parseString(body);
+            if (!rootElement.isJsonObject()) {
+                throw new IOException("空气质量响应不是有效的 JSON 对象");
+            }
+            JsonObject json = rootElement.getAsJsonObject();
 
-            if (json.has("code") && !"200".equals(json.get("code").getAsString())) {
-                log.error("空气质量API返回错误码：{}", json.get("code").getAsString());
-                throw new IOException("和风天气 API 错误，code：" + json.get("code").getAsString());
+            if (json.has("code") && json.get("code").isJsonPrimitive()) {
+                String code = json.get("code").getAsString();
+                if (!"200".equals(code)) {
+                    log.error("空气质量API返回错误码：{}", code);
+                    throw new IOException("和风天气 API 错误，code：" + code);
+                }
             }
 
-            // 确定城市名
             String finalCityName = cityName;
             if (finalCityName == null || finalCityName.trim().isEmpty()) {
                 finalCityName = getCityNameFromLastWeather();
@@ -158,67 +179,87 @@ public class WeatherService {
             weather.setCityName(finalCityName);
             weather.setUpdateTime(System.currentTimeMillis());
 
-            // 解析 indexes
-            if (json.has("indexes") && json.get("indexes").isJsonArray()) {
-                JsonArray indexes = json.getAsJsonArray("indexes");
+            // 安全解析 indexes 数组
+            JsonArray indexes = getJsonArray(json, "indexes");
+            if (indexes != null) {
                 for (int i = 0; i < indexes.size(); i++) {
-                    JsonObject index = indexes.get(i).getAsJsonObject();
-                    String code = index.get("code").getAsString();
-                    if ("us-epa".equals(code)) {
-                        if (index.has("aqi")) weather.setAqi(index.get("aqi").getAsInt());
-                        if (index.has("aqi")) weather.setAqiUs(index.get("aqi").getAsInt());
-                        if (index.has("category")) weather.setAirQuality(index.get("category").getAsString());
-                        if (index.has("primaryPollutant")) {
-                            JsonObject primary = index.getAsJsonObject("primaryPollutant");
-                            if (primary.has("code")) weather.setPrimaryPollutant(primary.get("code").getAsString());
+                    JsonElement indexElem = indexes.get(i);
+                    if (!indexElem.isJsonObject()) continue;
+                    JsonObject index = indexElem.getAsJsonObject();
+                    String idxCode = getString(index, "code");
+                    if ("us-epa".equals(idxCode)) {
+                        Integer aqiVal = getInt(index, "aqi");
+                        if (aqiVal != null) {
+                            weather.setAqi(aqiVal);
+                            weather.setAqiUs(aqiVal);
                         }
-                    } else if ("cn-mee".equals(code)) {
-                        if (index.has("aqi")) weather.setAqi(index.get("aqi").getAsInt());
-                        if (index.has("aqi")) weather.setAqiCN(index.get("aqi").getAsInt());
-                        if (index.has("category")) weather.setAirQuality(index.get("category").getAsString());
-                        if (index.has("primaryPollutant")) {
-                           JsonObject primary = index.getAsJsonObject("primaryPollutant");
-                           if (primary.has("code")) weather.setPrimaryPollutant(primary.get("code").getAsString());
+                        String category = getString(index, "category");
+                        if (category != null) weather.setAirQuality(category);
+                        JsonObject primary = getJsonObject(index, "primaryPollutant");
+                        if (primary != null) {
+                            String primaryCode = getString(primary, "code");
+                            if (primaryCode != null) weather.setPrimaryPollutant(primaryCode);
+                        }
+                    } else if ("cn-mee".equals(idxCode)) {
+                        Integer aqiVal = getInt(index, "aqi");
+                        if (aqiVal != null) {
+                            weather.setAqi(aqiVal);
+                            weather.setAqiCN(aqiVal);
+                        }
+                        String category = getString(index, "category");
+                        if (category != null) weather.setAirQuality(category);
+                        JsonObject primary = getJsonObject(index, "primaryPollutant");
+                        if (primary != null) {
+                            String primaryCode = getString(primary, "code");
+                            if (primaryCode != null) weather.setPrimaryPollutant(primaryCode);
+                        }
                     }
                 }
-            }
                 log.debug("空气质量指数解析完成，AQI(US): {}", weather.getAqiUs());
+            } else {
+                log.warn("空气质量响应中没有 'indexes' 字段");
             }
 
-            // 解析 pollutants
-            if (json.has("pollutants") && json.get("pollutants").isJsonArray()) {
-                JsonArray pollutants = json.getAsJsonArray("pollutants");
+            // 安全解析 pollutants 数组
+            JsonArray pollutants = getJsonArray(json, "pollutants");
+            if (pollutants != null) {
                 for (int i = 0; i < pollutants.size(); i++) {
-                    JsonObject pollutant = pollutants.get(i).getAsJsonObject();
-                    String code = pollutant.get("code").getAsString();
-                    if (pollutant.has("concentration")) {
-                        JsonObject conc = pollutant.getAsJsonObject("concentration");
-                        double value = conc.get("value").getAsDouble();
-                        switch (code) {
-                            case "pm2p5":
-                                weather.setPm25(String.valueOf(value));
-                                weather.setPm25Value(value);
-                                break;
-                            case "pm10":
-                                weather.setPm10(String.valueOf(value));
-                                weather.setPm10Value(value);
-                                break;
-                            case "no2":
-                                weather.setNo2(value);
-                                break;
-                            case "o3":
-                                weather.setO3(value);
-                                break;
-                            case "co":
-                                weather.setCo(value);
-                                break;
-                            case "so2":
-                                weather.setSo2(value);
-                                break;
+                    JsonElement pollElem = pollutants.get(i);
+                    if (!pollElem.isJsonObject()) continue;
+                    JsonObject pollutant = pollElem.getAsJsonObject();
+                    String pollCode = getString(pollutant, "code");
+                    JsonObject conc = getJsonObject(pollutant, "concentration");
+                    if (conc != null && pollCode != null) {
+                        Double value = getDouble(conc, "value");
+                        if (value != null) {
+                            switch (pollCode) {
+                                case "pm2p5":
+                                    weather.setPm25(String.valueOf(value));
+                                    weather.setPm25Value(value);
+                                    break;
+                                case "pm10":
+                                    weather.setPm10(String.valueOf(value));
+                                    weather.setPm10Value(value);
+                                    break;
+                                case "no2":
+                                    weather.setNo2(value);
+                                    break;
+                                case "o3":
+                                    weather.setO3(value);
+                                    break;
+                                case "co":
+                                    weather.setCo(value);
+                                    break;
+                                case "so2":
+                                    weather.setSo2(value);
+                                    break;
+                            }
                         }
                     }
                 }
                 log.debug("污染物浓度解析完成，PM2.5: {}", weather.getPm25Value());
+            } else {
+                log.warn("空气质量响应中没有 'pollutants' 字段");
             }
 
             return weatherRepository.save(weather);
@@ -308,15 +349,71 @@ public class WeatherService {
                 throw new IOException("逆地理编码失败，状态码：" + response.code());
             }
             String body = response.body().string();
-            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-            if (!"200".equals(json.get("code").getAsString())) {
-                throw new IOException("逆地理编码错误，code：" + json.get("code").getAsString());
+            JsonElement root = JsonParser.parseString(body);
+            if (!root.isJsonObject()) {
+                throw new IOException("逆地理编码响应不是有效 JSON");
             }
-            JsonArray locations = json.getAsJsonArray("location");
-            if (locations.size() == 0) {
+            JsonObject json = root.getAsJsonObject();
+            String code = getString(json, "code");
+            if (!"200".equals(code)) {
+                throw new IOException("逆地理编码错误，code：" + code);
+            }
+            JsonArray locations = getJsonArray(json, "location");
+            if (locations == null || locations.size() == 0) {
                 throw new IOException("未找到对应城市");
             }
-            return locations.get(0).getAsJsonObject().get("name").getAsString();
+            JsonObject firstLoc = locations.get(0).getAsJsonObject();
+            String cityName = getString(firstLoc, "name");
+            if (cityName == null) {
+                throw new IOException("未找到城市名称字段");
+            }
+            return cityName;
+        } catch (Exception e) {
+            log.error("逆地理编码失败", e);
+            throw new IOException("逆地理编码失败: " + e.getMessage(), e);
         }
     }
+
+    // ==================== 安全的 JSON 解析辅助方法 ====================
+
+    private JsonObject getJsonObject(JsonObject parent, String key) {
+        if (parent.has(key) && parent.get(key).isJsonObject()) {
+            return parent.getAsJsonObject(key);
+        }
+        return null;
+    }
+
+    private JsonArray getJsonArray(JsonObject parent, String key) {
+        if (parent.has(key) && parent.get(key).isJsonArray()) {
+            return parent.getAsJsonArray(key);
+        }
+        return null;
+    }
+
+    private String getString(JsonObject obj, String key) {
+        if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
+            return obj.get(key).getAsString();
+        }
+        return null;
+    }
+
+    private Double getDouble(JsonObject obj, String key) {
+        if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
+            return obj.get(key).getAsDouble();
+        }
+        return null;
+    }
+
+    private Integer getInt(JsonObject obj, String key) {
+        if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
+            try {
+                return obj.get(key).getAsInt();
+            } catch (NumberFormatException e) {
+                log.warn("无法将字段 {} 解析为 Integer: {}", key, obj.get(key));
+                return null;
+            }
+        }
+        return null;
+    }
+
 }
