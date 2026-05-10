@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private String currentCity = "";
 
     private boolean hasPerformedInitialLocation = false;
+    private boolean isGpsResultApplied = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initViews();
-        // 每次打开都请求定位当前位置
-        checkLocationPermission();
+        loadCurrentLocationFromServer();  // 先显示上次查看的城市，零等待
+        checkLocationPermission();        // 后台同时进行 GPS 定位
     }
 
     private void initViews() {
@@ -324,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject data = json.optJSONObject("data");
                             runOnUiThread(() -> {
                                 if (data != null && data.has("cityName")) {
+                                    isGpsResultApplied = true;
                                     currentCity = data.optString("cityName");
                                     tvCityName.setText(currentCity);
                                 }
@@ -347,9 +349,7 @@ public class MainActivity extends AppCompatActivity {
         Request request = new Request.Builder().url(BASE_URL + "location/local").build();
         httpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> performInitialLocationIfNeeded());
-            }
+            public void onFailure(Call call, IOException e) { }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -364,21 +364,18 @@ public class MainActivity extends AppCompatActivity {
                                 String city = data.optString("cityName", "");
                                 if (!city.isEmpty()) {
                                     runOnUiThread(() -> {
-                                        currentCity = city;
-                                        tvCityName.setText(city);
-                                        loadWeatherData(city);
+                                        if (!isGpsResultApplied) {
+                                            currentCity = city;
+                                            tvCityName.setText(city);
+                                            loadWeatherData(city);
+                                        }
                                     });
-                                    return;
                                 }
                             }
                         }
-                        runOnUiThread(() -> performInitialLocationIfNeeded());
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        runOnUiThread(() -> performInitialLocationIfNeeded());
                     }
-                } else {
-                    runOnUiThread(() -> performInitialLocationIfNeeded());
                 }
             }
         });
@@ -414,7 +411,11 @@ public class MainActivity extends AppCompatActivity {
                         boolean success = json.optBoolean("success", false);
                         if (success) {
                             JSONObject data = json.optJSONObject("data");
-                            runOnUiThread(() -> updateWeatherUI(data));
+                            runOnUiThread(() -> {
+                                if (!isGpsResultApplied) {
+                                    updateWeatherUI(data);
+                                }
+                            });
                         } else {
                             runOnUiThread(() -> Toast.makeText(MainActivity.this, "获取天气数据失败", Toast.LENGTH_SHORT).show());
                         }

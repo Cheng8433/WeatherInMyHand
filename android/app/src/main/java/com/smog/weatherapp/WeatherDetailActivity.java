@@ -6,12 +6,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.anychart.AnyChart;
+import com.anychart.AnyChartView;
+import com.anychart.chart.common.dataentry.DataEntry;
+import com.anychart.chart.common.dataentry.ValueDataEntry;
+import com.anychart.charts.Cartesian;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -26,6 +35,7 @@ public class WeatherDetailActivity extends AppCompatActivity {
     private TextView tvDetailCity, tvAssessment, tvDetailAqi, tvDetailAirQuality;
     private TextView tvDetailPm25, tvDetailPm10, tvDetailWeather;
     private TextView tvDetailTemperature, tvDetailHumidity, tvHealthAdvice;
+    private AnyChartView chartHourly;
 
     private OkHttpClient httpClient = new OkHttpClient();
     private String city;
@@ -51,6 +61,7 @@ public class WeatherDetailActivity extends AppCompatActivity {
         tvDetailTemperature = findViewById(R.id.tvDetailTemperature);
         tvDetailHumidity = findViewById(R.id.tvDetailHumidity);
         tvHealthAdvice = findViewById(R.id.tvHealthAdvice);
+        chartHourly = findViewById(R.id.chartHourly);
 
         tvDetailCity.setText(city + "天气详情");
     }
@@ -118,6 +129,11 @@ public class WeatherDetailActivity extends AppCompatActivity {
 
         tvAssessment.setText(getAssessment(aqi));
         tvHealthAdvice.setText(getHealthAdvice(aqi));
+
+        JSONArray hourlyForecast = data.optJSONArray("hourlyForecast");
+        if (hourlyForecast != null && hourlyForecast.length() > 0) {
+            renderHourlyChart(hourlyForecast);
+        }
     }
 
     private String getAssessment(int aqi) {
@@ -127,6 +143,32 @@ public class WeatherDetailActivity extends AppCompatActivity {
         else if (aqi <= 200) return "中度污染 - 所有人应减少户外活动";
         else if (aqi <= 300) return "重度污染 - 避免户外活动";
         else return "严重污染 - 尽可能待在室内";
+    }
+
+    private void renderHourlyChart(JSONArray hourlyForecast) {
+        List<DataEntry> tempData = new ArrayList<>();
+        List<DataEntry> humData = new ArrayList<>();
+
+        for (int i = 0; i < hourlyForecast.length(); i++) {
+            try {
+                JSONObject item = hourlyForecast.getJSONObject(i);
+                String fxTime = item.optString("fxTime", "");
+                String label = fxTime.length() >= 16 ? fxTime.substring(11, 16) : fxTime;
+                double temp = Double.parseDouble(item.optString("temp", "0"));
+                double hum = Double.parseDouble(item.optString("humidity", "0"));
+                tempData.add(new ValueDataEntry(label, temp));
+                humData.add(new ValueDataEntry(label, hum));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (tempData.isEmpty()) return;
+
+        Cartesian cartesian = AnyChart.line();
+        cartesian.line(tempData).name("温度 (°C)");
+        cartesian.line(humData).name("湿度 (%)");
+        chartHourly.setChart(cartesian);
     }
 
     private String getHealthAdvice(int aqi) {

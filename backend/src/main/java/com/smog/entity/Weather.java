@@ -2,6 +2,8 @@ package com.smog.entity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "weather_data")
@@ -99,6 +101,10 @@ public class Weather {
     @Column
     private Double so2;               // 二氧化硫浓度（ppb，若接口返回）
 
+    // ================== 逐小时预报（不入库） ==================
+    @Transient
+    private List<Map<String, Object>> hourlyForecast;
+
     // ================== 构造器、Getter 和 Setter ==================
     public Weather() {}
 
@@ -167,4 +173,7 @@ public class Weather {
     public void setCo(Double co) { this.co = co; }
     public Double getSo2() { return so2; }
     public void setSo2(Double so2) { this.so2 = so2; }
+
+    public List<Map<String, Object>> getHourlyForecast() { return hourlyForecast; }
+    public void setHourlyForecast(List<Map<String, Object>> hourlyForecast) { this.hourlyForecast = hourlyForecast; }
 }

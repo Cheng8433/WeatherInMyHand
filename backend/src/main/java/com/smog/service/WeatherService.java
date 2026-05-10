@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class WeatherService {
@@ -300,6 +303,16 @@ public class WeatherService {
         Weather airWeather = getAirQualityByLatLon(loc.getLatitude(), loc.getLongitude(), cityName);
         mergeAirQuality(weather, airWeather);
         log.info("空气质量数据合并完成，AQI={}", weather.getAqiUs());
+
+        // 获取 24 小时逐小时预报（温湿度趋势）
+        try {
+            List<Map<String, Object>> hourly = getHourlyForecast(loc.getLatitude(), loc.getLongitude());
+            weather.setHourlyForecast(hourly);
+            log.info("24小时逐小时预报获取成功，共 {} 条数据", hourly.size());
+        } catch (Exception e) {
+            log.warn("获取逐小时预报失败: {}", e.getMessage());
+        }
+
         return weatherRepository.save(weather);
     }
 
@@ -319,6 +332,47 @@ public class WeatherService {
         if (source.getSo2() != null) target.setSo2(source.getSo2());
         target.setUpdateTime(System.currentTimeMillis());
         log.debug("合并空气质量字段完成");
+    }
+
+    private List<Map<String, Object>> getHourlyForecast(double latitude, double longitude) throws IOException {
+        String token = jwtUtil.generateToken();
+        String locationParam = String.format("%.2f,%.2f", longitude, latitude);
+        String url = API_HOST + "/v7/weather/24h?location=" + locationParam;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("逐小时预报API响应失败，状态码：" + response.code());
+            }
+            String body = response.body().string();
+            JsonElement root = JsonParser.parseString(body);
+            if (!root.isJsonObject()) {
+                throw new IOException("逐小时预报响应不是有效 JSON");
+            }
+            JsonObject json = root.getAsJsonObject();
+            String code = getString(json, "code");
+            if (!"200".equals(code)) {
+                throw new IOException("和风天气逐小时预报错误，code：" + code);
+            }
+            JsonArray hourlyArray = getJsonArray(json, "hourly");
+            if (hourlyArray == null) {
+                return new ArrayList<>();
+            }
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (int i = 0; i < hourlyArray.size(); i++) {
+                JsonObject item = hourlyArray.get(i).getAsJsonObject();
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("fxTime", getString(item, "fxTime"));
+                map.put("temp", getString(item, "temp"));
+                map.put("humidity", getString(item, "humidity"));
+                result.add(map);
+            }
+            return result;
+        }
     }
 
     /**
