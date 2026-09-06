@@ -59,6 +59,8 @@ logs/
 
 # ─── Secrets / private keys ───────────────────────────
 *.pem
+*.keystore
+keystore.properties
 .env
 
 # ─── H2 file database (backend/data/ 与仓库根运行残留) ─

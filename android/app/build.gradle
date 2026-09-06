@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
 
+// 读取本机 release 签名配置（keystore.properties 不入库，见 .gitignore）。
+// 文件缺失时 release 退回未签名构建，方便他人/CI 无签名编译。
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('app/keystore.properties')
+def hasSigning = keystorePropertiesFile.exists()
+if (hasSigning) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     namespace 'com.smog.weatherapp'
     compileSdk 34
@@ -17,10 +26,24 @@ android {
         buildConfigField "String", "BACK_HOST_API", "\"http://118.178.147.156:8080/api/\""
     }
 
+    signingConfigs {
+        release {
+            if (hasSigning) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
