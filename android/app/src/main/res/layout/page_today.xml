@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/scrollToday"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            android:background="?attr/pageBackground">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+        <!-- ===== Hero：大 emoji + 大温度 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/headerBackground"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="22dp"
+                    android:paddingBottom="22dp"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp">
+
+                <TextView
+                        android:id="@+id/tvWeatherEmoji"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⛅"
+                        android:textSize="64sp"
+                        android:gravity="center" />
+
+                <TextView
+                        android:id="@+id/tvWeatherDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="17sp"
+                        android:textColor="?attr/onHeaderText"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="2dp">
+
+                    <TextView
+                            android:id="@+id/tvTempNum"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="84sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/onHeaderText" />
+
+                    <TextView
+                            android:id="@+id/tvTempUnit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="°C"
+                            android:textSize="28sp"
+                            android:textColor="?attr/onHeaderText"
+                            android:layout_marginBottom="18dp"
+                            android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <TextView
+                        android:id="@+id/tvHeroSub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="14sp"
+                        android:textColor="?attr/onHeaderText"
+                        android:alpha="0.82"
+                        android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 实时数据网格 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/textSecondary"
+                app:strokeWidth="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="实时数据"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary"
+                        android:paddingStart="10dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="6dp" />
+
+                <!-- row1 -->
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMFeels"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="体感温度"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMHumidity"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="湿度"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- row2 -->
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMCloud"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="云量"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMVis"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="能见度"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- row3 -->
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMPressure"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="气压"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMPrecip"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="降水"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- row4 -->
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMDew"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="露点"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                        <TextView
+                                android:id="@+id/tvMWindSp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="19sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="风速"
+                                android:textSize="12sp"
+                                android:textColor="?attr/textSecondary"
+                                android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 风 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌬 风"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary" />
+
+                <TextView
+                        android:id="@+id/tvWindMain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary"
+                        android:layout_marginTop="6dp" />
+
+                <TextView
+                        android:id="@+id/tvWindSub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="14sp"
+                        android:textColor="?attr/textSecondary"
+                        android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="?attr/headerBackground"
+              android:paddingStart="18dp"
+              android:paddingEnd="18dp"
+              android:paddingTop="10dp"
+              android:paddingBottom="12dp">
+
+    <!-- 城市 + 刷新/主题动作 -->
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="当前城市"
+                    android:textSize="12sp"
+                    android:textColor="?attr/onHeaderText"
+                    android:alpha="0.65" />
+
+            <TextView
+                    android:id="@+id/tvCityName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="获取定位中…"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/onHeaderText" />
+        </LinearLayout>
+
+        <ImageButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_refresh"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="刷新" />
+
+        <ImageButton
+                android:id="@+id/btnTheme"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_palette"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="切换主题" />
+    </LinearLayout>
+
+    <!-- 搜索栏 -->
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_search_container"
+            android:paddingStart="14dp"
+            android:paddingEnd="6dp">
+
+        <EditText
+                android:id="@+id/etSearchCity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="搜索城市，如 北京"
+                android:textColor="?attr/onHeaderText"
+                android:textColorHint="#B3FFFFFF"
+                android:background="@null"
+                android:inputType="text"
+                android:singleLine="true" />
+
+        <ImageButton
+                android:id="@+id/btnSearch"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_search"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="搜索" />
+    </LinearLayout>
+</LinearLayout>

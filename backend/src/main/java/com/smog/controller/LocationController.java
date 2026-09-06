@@ -19,35 +19,29 @@ public class LocationController {
 
     /**
      * 客户端保存位置（支持两种方式）：
-     * 1. 上传经纬度：{"latitude": 39.9042, "longitude": 116.4074}
+     * 1. 上传经纬度：{"latitude": 39.9042, "longitude": 116.4074}（逆地理编码得城市名）
      * 2. 上传城市名：{"cityName": "北京", "latitude": 0, "longitude": 0}
+     * 错误统一由 GlobalExceptionHandler 返回 {success:false, message}（HTTP 200）
      */
     @PostMapping("/save")
-    public ResponseEntity<?> saveLocation(@RequestBody Map<String, Object> payload) {
-        try {
-            Location location;
-            // 判断是否有经纬度且非零（定位场景）
-            double lat = payload.get("latitude") != null ? ((Number) payload.get("latitude")).doubleValue() : 0;
-            double lon = payload.get("longitude") != null ? ((Number) payload.get("longitude")).doubleValue() : 0;
-            String cityName = (String) payload.get("cityName");
+    public Location saveLocation(@RequestBody Map<String, Object> payload) throws IOException {
+        double lat = payload.get("latitude") != null ? ((Number) payload.get("latitude")).doubleValue() : 0;
+        double lon = payload.get("longitude") != null ? ((Number) payload.get("longitude")).doubleValue() : 0;
+        String cityName = (String) payload.get("cityName");
 
-            if (lat != 0 && lon != 0) {
-                // 定位场景：根据经纬度逆地理编码获取城市名
-                location = locationService.saveLocationByLatLon(lat, lon);
-            } else if (cityName != null && !cityName.isEmpty()) {
-                // 手动搜索场景：根据城市名保存
-                location = locationService.saveLocationFromApi(cityName);
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "无效的请求参数"));
-            }
-            return ResponseEntity.ok(location);
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        if (lat != 0 && lon != 0) {
+            // 定位场景：根据经纬度逆地理编码获取城市名
+            return locationService.saveLocationByLatLon(lat, lon);
+        } else if (cityName != null && !cityName.isEmpty()) {
+            // 手动搜索场景：根据城市名保存
+            return locationService.saveLocationFromApi(cityName);
+        } else {
+            throw new IllegalArgumentException("无效的请求参数");
         }
     }
 
     /**
-     * 获取最近一次保存的位置（用于冷启动恢复）
+     * 获取最近一次保存的位置（用于冷启动恢复，无参数）
      */
     @GetMapping("/local")
     public ResponseEntity<?> getLatestLocation() {
@@ -64,6 +58,4 @@ public class LocationController {
         ));
         return ResponseEntity.ok(result);
     }
-
-    // 其他接口（search, fetch）保持不变...
 }

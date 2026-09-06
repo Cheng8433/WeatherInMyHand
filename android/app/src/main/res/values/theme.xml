@@ -1,10 +1,80 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- 基础主题，继承自 AppCompat -->
-    <style name="Theme.WeatherApp" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <!-- 在这里可以自定义颜色、字体等 -->
-        <item name="colorPrimary">@color/aqi_excellent</item>
-        <item name="colorPrimaryVariant">@color/aqi_excellent</item>
+    <!--
+        4 套可选主题（深/浅都有）。布局只引用 ?attr/pageBackground、cardBackground、
+        textPrimary、textSecondary、headerBackground、onHeaderText 这套自定义属性，
+        因此换主题不需要改任何布局；新加主题只需复制一个 <style> 并改色。
+    -->
+
+    <!-- 主题 1 · 天蓝·晴（浅，默认） -->
+    <style name="Theme.Weather.Sky" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="pageBackground">@color/sky_page</item>
+        <item name="cardBackground">@color/sky_card</item>
+        <item name="textPrimary">@color/sky_text_primary</item>
+        <item name="textSecondary">@color/sky_text_secondary</item>
+        <item name="headerBackground">@color/sky_header</item>
+        <item name="onHeaderText">@color/white</item>
+
+        <item name="colorPrimary">@color/sky_accent</item>
+        <item name="colorPrimaryVariant">@color/sky_header</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- 其他属性 -->
+        <item name="colorSurface">@color/sky_card</item>
+        <item name="android:windowBackground">@color/sky_page</item>
+        <item name="android:statusBarColor">@color/sky_header</item>
+        <item name="android:navigationBarColor">@color/sky_page</item>
+    </style>
+
+    <!-- 主题 2 · 深蓝·夜空（暗） -->
+    <style name="Theme.Weather.Night" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="pageBackground">@color/night_page</item>
+        <item name="cardBackground">@color/night_card</item>
+        <item name="textPrimary">@color/night_text_primary</item>
+        <item name="textSecondary">@color/night_text_secondary</item>
+        <item name="headerBackground">@color/night_header</item>
+        <item name="onHeaderText">@color/white</item>
+
+        <item name="colorPrimary">@color/night_accent</item>
+        <item name="colorPrimaryVariant">@color/night_header</item>
+        <item name="colorOnPrimary">@color/night_page</item>
+        <item name="colorSurface">@color/night_card</item>
+        <item name="android:windowBackground">@color/night_page</item>
+        <item name="android:statusBarColor">@color/night_header</item>
+        <item name="android:navigationBarColor">@color/night_page</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- 主题 3 · 森林·青绿（浅） -->
+    <style name="Theme.Weather.Forest" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="pageBackground">@color/forest_page</item>
+        <item name="cardBackground">@color/forest_card</item>
+        <item name="textPrimary">@color/forest_text_primary</item>
+        <item name="textSecondary">@color/forest_text_secondary</item>
+        <item name="headerBackground">@color/forest_header</item>
+        <item name="onHeaderText">@color/white</item>
+
+        <item name="colorPrimary">@color/forest_accent</item>
+        <item name="colorPrimaryVariant">@color/forest_header</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSurface">@color/forest_card</item>
+        <item name="android:windowBackground">@color/forest_page</item>
+        <item name="android:statusBarColor">@color/forest_header</item>
+        <item name="android:navigationBarColor">@color/forest_page</item>
+    </style>
+
+    <!-- 主题 4 · 暖橙·日落（浅） -->
+    <style name="Theme.Weather.Sunset" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="pageBackground">@color/sunset_page</item>
+        <item name="cardBackground">@color/sunset_card</item>
+        <item name="textPrimary">@color/sunset_text_primary</item>
+        <item name="textSecondary">@color/sunset_text_secondary</item>
+        <item name="headerBackground">@color/sunset_header</item>
+        <item name="onHeaderText">@color/white</item>
+
+        <item name="colorPrimary">@color/sunset_accent</item>
+        <item name="colorPrimaryVariant">@color/sunset_header</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSurface">@color/sunset_card</item>
+        <item name="android:windowBackground">@color/sunset_page</item>
+        <item name="android:statusBarColor">@color/sunset_header</item>
+        <item name="android:navigationBarColor">@color/sunset_page</item>
     </style>
 </resources>

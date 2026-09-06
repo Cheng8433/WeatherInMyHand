@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class WeatherService {
@@ -39,7 +40,12 @@ public class WeatherService {
     @Autowired
     private LocationService locationService;
 
-    private final OkHttpClient client = new OkHttpClient();
+    // 显式设置超时，避免上游挂起时请求线程长时间阻塞
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .build();
 
     private static final String API_HOST = "https://nx4nmurq3h.re.qweatherapi.com";
 
@@ -65,7 +71,8 @@ public class WeatherService {
         String token = jwtUtil.generateToken();
         String latStr = String.format("%.2f", latitude);
         String lonStr = String.format("%.2f", longitude);
-        String url = API_HOST + "/v7/weather/now?location=" + lonStr + "," + latStr;
+        // 和风 v1 实时天气（v7 已弃用）：/weather/v1/current/{latitude}/{longitude}
+        String url = API_HOST + "/weather/v1/current/" + latStr + "/" + lonStr;
         log.debug("请求URL: {}", url);
 
         Request request = new Request.Builder()
@@ -84,46 +91,84 @@ public class WeatherService {
             if (!rootElement.isJsonObject()) {
                 throw new IOException("响应不是有效的 JSON 对象");
             }
+            // v1 实时天气响应无顶层 code/now 字段，数据即响应本体，成功与否只看 HTTP 状态
             JsonObject json = rootElement.getAsJsonObject();
 
-            String code = getString(json, "code");
-            if (!"200".equals(code)) {
-                log.error("和风天气API返回错误码：{}", code);
-                throw new IOException("和风天气 API 错误，code：" + code);
-            }
-
-            Weather weather = new Weather();
+            // 复用该城市最近一条记录做“更新”（upsert），避免每次请求都 INSERT 新行导致表无限增长。
+            // 没有任何接口读历史行，始终只需保留每个城市的最新快照。
+            Weather weather = weatherRepository.findTopByCityNameOrderByUpdateTimeDesc(cityName)
+                    .orElseGet(Weather::new);
             weather.setCityName(cityName);
             weather.setUpdateTime(System.currentTimeMillis());
 
-            JsonObject now = getJsonObject(json, "now");
-            if (now != null) {
-                if (now.has("text") && now.get("text").isJsonPrimitive())
-                    weather.setWeather(now.get("text").getAsString());
-                Double temp = getDouble(now, "temp");
+            JsonObject condition = getJsonObject(json, "condition");
+            if (condition != null) {
+                String text = getString(condition, "text");
+                if (text != null) weather.setWeather(text);
+            }
+
+            JsonObject temperatureObj = getJsonObject(json, "temperature");
+            if (temperatureObj != null) {
+                Double temp = getDouble(temperatureObj, "value");
                 if (temp != null) weather.setTemperature(temp);
-                Double feelsLike = getDouble(now, "feelsLike");
+            }
+
+            JsonObject feelsLikeObj = getJsonObject(json, "feelsLike");
+            if (feelsLikeObj != null) {
+                Double feelsLike = getDouble(feelsLikeObj, "value");
                 if (feelsLike != null) weather.setFeelsLike(feelsLike);
-                Double humidity = getDouble(now, "humidity");
-                if (humidity != null) weather.setHumidity(humidity);
-                String windDir = getString(now, "windDir");
-                if (windDir != null) weather.setWindDir(windDir);
-                String windScale = getString(now, "windScale");
-                if (windScale != null) weather.setWindScale(windScale);
-                Double windSpeed = getDouble(now, "windSpeed");
-                if (windSpeed != null) weather.setWindSpeed(windSpeed);
-                Double precip = getDouble(now, "precip");
-                if (precip != null) weather.setPrecip(precip);
-                Double pressure = getDouble(now, "pressure");
+            }
+
+            // v1 湿度为 0~1 小数，转成 0~100 百分比以保持原字段语义
+            Double humidityRatio = getDouble(json, "humidity");
+            if (humidityRatio != null) weather.setHumidity(Math.round(humidityRatio * 1000) / 10.0);
+
+            JsonObject wind = getJsonObject(json, "wind");
+            if (wind != null) {
+                JsonObject direction = getJsonObject(wind, "direction");
+                if (direction != null) {
+                    String compass = getString(direction, "compass");
+                    if (compass != null) weather.setWindDir(compass);
+                }
+                if (wind.has("scale") && wind.get("scale").isJsonPrimitive())
+                    weather.setWindScale(wind.get("scale").getAsString());
+                JsonObject speed = getJsonObject(wind, "speed");
+                if (speed != null) {
+                    Double windMs = getDouble(speed, "value");
+                    if (windMs != null) weather.setWindSpeed(Math.round(windMs * 3.6 * 10) / 10.0); // m/s -> km/h
+                }
+            }
+
+            JsonObject precipitation = getJsonObject(json, "precipitation");
+            if (precipitation != null) {
+                JsonObject amount = getJsonObject(precipitation, "amount");
+                if (amount != null) {
+                    Double precip = getDouble(amount, "value");
+                    if (precip != null) weather.setPrecip(precip);
+                }
+            }
+
+            JsonObject pressureObj = getJsonObject(json, "pressure");
+            if (pressureObj != null) {
+                Double pressure = getDouble(pressureObj, "value");
                 if (pressure != null) weather.setPressure(pressure);
-                Double vis = getDouble(now, "vis");
-                if (vis != null) weather.setVis(vis);
-                String cloud = getString(now, "cloud");
-                if (cloud != null) weather.setCloud(cloud);
-                Double dew = getDouble(now, "dew");
+            }
+
+            // v1 能见度单位为米，转成公里以保持原字段语义
+            JsonObject visObj = getJsonObject(json, "visibility");
+            if (visObj != null) {
+                Double visMeters = getDouble(visObj, "value");
+                if (visMeters != null) weather.setVis(Math.round(visMeters / 10.0) / 100.0);
+            }
+
+            // v1 云量为 0~1 小数，转成百分比字符串
+            Double cloudRatio = getDouble(json, "cloudCover");
+            if (cloudRatio != null) weather.setCloud(String.valueOf(Math.round(cloudRatio * 100)));
+
+            JsonObject dewObj = getJsonObject(json, "dewPoint");
+            if (dewObj != null) {
+                Double dew = getDouble(dewObj, "value");
                 if (dew != null) weather.setDew(dew);
-            } else {
-                log.warn("实时天气响应中没有 'now' 字段");
             }
 
             return weatherRepository.save(weather);
@@ -336,8 +381,10 @@ public class WeatherService {
 
     private List<Map<String, Object>> getHourlyForecast(double latitude, double longitude) throws IOException {
         String token = jwtUtil.generateToken();
-        String locationParam = String.format("%.2f,%.2f", longitude, latitude);
-        String url = API_HOST + "/v7/weather/24h?location=" + locationParam;
+        String latStr = String.format("%.2f", latitude);
+        String lonStr = String.format("%.2f", longitude);
+        // 和风 v1 逐小时（v7 /24h 已弃用）：默认返回 24 小时；localTime=true 使 forecastTime 为当地时间
+        String url = API_HOST + "/weather/v1/hourly/" + latStr + "/" + lonStr + "?localTime=true";
 
         Request request = new Request.Builder()
                 .url(url)
@@ -354,21 +401,25 @@ public class WeatherService {
                 throw new IOException("逐小时预报响应不是有效 JSON");
             }
             JsonObject json = root.getAsJsonObject();
-            String code = getString(json, "code");
-            if (!"200".equals(code)) {
-                throw new IOException("和风天气逐小时预报错误，code：" + code);
-            }
-            JsonArray hourlyArray = getJsonArray(json, "hourly");
-            if (hourlyArray == null) {
+            JsonArray hours = getJsonArray(json, "hours");
+            if (hours == null) {
                 return new ArrayList<>();
             }
             List<Map<String, Object>> result = new ArrayList<>();
-            for (int i = 0; i < hourlyArray.size(); i++) {
-                JsonObject item = hourlyArray.get(i).getAsJsonObject();
+            for (int i = 0; i < hours.size(); i++) {
+                if (!hours.get(i).isJsonObject()) continue;
+                JsonObject item = hours.get(i).getAsJsonObject();
                 Map<String, Object> map = new java.util.HashMap<>();
-                map.put("fxTime", getString(item, "fxTime"));
-                map.put("temp", getString(item, "temp"));
-                map.put("humidity", getString(item, "humidity"));
+                // 保持 Android 折线图读取的键名不变：fxTime/temp/humidity
+                map.put("fxTime", getString(item, "forecastTime"));
+                JsonObject tempObj = getJsonObject(item, "temperature");
+                if (tempObj != null) {
+                    Double temp = getDouble(tempObj, "value");
+                    map.put("temp", temp != null ? String.valueOf(temp) : null);
+                }
+                Double humidityRatio = getDouble(item, "humidity");
+                map.put("humidity", humidityRatio != null
+                        ? String.valueOf(Math.round(humidityRatio * 1000) / 10.0) : null);
                 result.add(map);
             }
             return result;
@@ -376,56 +427,13 @@ public class WeatherService {
     }
 
     /**
-     * 根据经纬度获取天气和空气质量（内部会先逆地理编码获取城市名）
+     * 根据经纬度获取天气和空气质量（内部先逆地理编码得城市名）
      */
     public Weather getWeatherAndAirQualityByLatLon(double lat, double lon) throws IOException {
-        // 1. 调用和风逆地理编码获取城市名
-        String cityName = getCityNameByLatLon(lat, lon);
-        // 2. 再用城市名获取天气（或者直接用经纬度获取，但现有方法已支持）
+        // 复用 LocationService 的逆地理编码（只查不存，避免每次 GPS 上报新增 location 行）
+        String cityName = locationService.reverseGeocode(lat, lon).getCityName();
+        // 再按城市名走既有链路获取天气 + 空气质量 + 逐小时
         return getWeatherAndAirQuality(cityName);
-    }
-
-    /**
-     * 仅根据经纬度获取城市名（逆地理编码）
-     */
-    private String getCityNameByLatLon(double lat, double lon) throws IOException {
-        String token = jwtUtil.generateToken();
-        String locationParam = lon + "," + lat;
-        String url = API_HOST + "/geo/v2/city/lookup?location=" + locationParam;
-
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer " + token)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("逆地理编码失败，状态码：" + response.code());
-            }
-            String body = response.body().string();
-            JsonElement root = JsonParser.parseString(body);
-            if (!root.isJsonObject()) {
-                throw new IOException("逆地理编码响应不是有效 JSON");
-            }
-            JsonObject json = root.getAsJsonObject();
-            String code = getString(json, "code");
-            if (!"200".equals(code)) {
-                throw new IOException("逆地理编码错误，code：" + code);
-            }
-            JsonArray locations = getJsonArray(json, "location");
-            if (locations == null || locations.size() == 0) {
-                throw new IOException("未找到对应城市");
-            }
-            JsonObject firstLoc = locations.get(0).getAsJsonObject();
-            String cityName = getString(firstLoc, "name");
-            if (cityName == null) {
-                throw new IOException("未找到城市名称字段");
-            }
-            return cityName;
-        } catch (Exception e) {
-            log.error("逆地理编码失败", e);
-            throw new IOException("逆地理编码失败: " + e.getMessage(), e);
-        }
     }
 
     // ==================== 安全的 JSON 解析辅助方法 ====================

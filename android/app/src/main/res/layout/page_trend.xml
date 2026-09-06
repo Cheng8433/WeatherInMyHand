@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/scrollTrend"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            android:background="?attr/pageBackground">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="24 小时温湿度趋势"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary" />
+
+                <TextView
+                        android:id="@+id/tvTrendSummary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="逐小时预报 · 加载中…"
+                        android:textSize="13sp"
+                        android:textColor="?attr/textSecondary"
+                        android:layout_marginTop="4dp" />
+
+                <com.anychart.AnyChartView
+                        android:id="@+id/chartHourly"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_marginTop="10dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👀 怎么看"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="折线图展示未来 24 小时逐小时的温度与湿度变化，纵轴刻度会随数值自动缩放。当前城市的最新数据快照会保存，但逐小时预报为临时数据，不做历史存档。"
+                        android:textSize="13sp"
+                        android:textColor="?attr/textSecondary"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="4dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自定义主题属性：布局统一用 ?attr/xxx 引用，换主题即整套换色 -->
+    <declare-styleable name="WeatherPalette">
+        <attr name="pageBackground" format="color" />
+        <attr name="cardBackground" format="color" />
+        <attr name="textPrimary" format="color" />
+        <attr name="textSecondary" format="color" />
+        <attr name="headerBackground" format="color" />
+        <attr name="onHeaderText" format="color" />
+    </declare-styleable>
+</resources>

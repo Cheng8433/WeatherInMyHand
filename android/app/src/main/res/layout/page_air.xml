@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/scrollAir"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            android:background="?attr/pageBackground">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+        <!-- ===== AQI 总览 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="20dp">
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                    <TextView
+                            android:id="@+id/tvAqiNum"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="66sp"
+                            android:textStyle="bold"
+                            android:includeFontPadding="false" />
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AQI"
+                            android:textSize="13sp"
+                            android:textColor="?attr/textSecondary" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="20dp">
+
+                    <TextView
+                            android:id="@+id/tvAqiLevel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                    <TextView
+                            android:id="@+id/tvAqiDesc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="空气质量指数"
+                            android:textSize="14sp"
+                            android:textColor="?attr/textSecondary"
+                            android:layout_marginTop="6dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 评估与首要污染物 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="首要污染物"
+                            android:textSize="13sp"
+                            android:textColor="?attr/textSecondary" />
+
+                    <TextView
+                            android:id="@+id/tvPrimaryPoll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/textPrimary"
+                            android:layout_marginStart="10dp" />
+                </LinearLayout>
+
+                <TextView
+                        android:id="@+id/tvAqiAssessment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="获取中…"
+                        android:textSize="15sp"
+                        android:textColor="?attr/textPrimary"
+                        android:layout_marginTop="12dp"
+                        android:lineSpacingExtra="3dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 污染物浓度 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="污染物浓度"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary" />
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="单位：μg/m³（CO 为 mg/m³）"
+                        android:textSize="11sp"
+                        android:textColor="?attr/textSecondary"
+                        android:layout_marginTop="2dp" />
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp">
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="PM2.5"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollPm25"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="PM10"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollPm10"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="NO₂"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollNo2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="O₃"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollO3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="CO"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollCo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="7dp"
+                            android:paddingBottom="7dp">
+                        <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="SO₂"
+                                android:textSize="14sp"
+                                android:textColor="?attr/textSecondary" />
+                        <TextView
+                                android:id="@+id/tvPollSo2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textPrimary" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 健康建议 ===== -->
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="健康建议"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textPrimary" />
+
+                <TextView
+                        android:id="@+id/tvHealthAdvice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="获取中…"
+                        android:textSize="14sp"
+                        android:textColor="?attr/textSecondary"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="5dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

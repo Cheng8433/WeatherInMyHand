@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LocationService {
@@ -26,7 +27,12 @@ public class LocationService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    private final OkHttpClient client = new OkHttpClient();
+    // 显式设置超时，避免上游挂起时请求线程长时间阻塞
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .build();
     private static final String API_HOST = "https://nx4nmurq3h.re.qweatherapi.com";
 
     /**
@@ -132,14 +138,13 @@ public class LocationService {
     // 在 LocationService 中添加以下方法
 
     /**
-     * 根据经纬度保存位置（调用和风天气逆地理编码获取城市名）
+     * 逆地理编码：根据经纬度查询最近城市（不入库）。和风 geo/v2/city/lookup 支持传入 "经度,纬度" 反向查找。
      * @param lat 纬度
      * @param lon 经度
-     * @return 保存后的 Location
+     * @return 未保存的 Location（含 API 返回的标准城市名与原始经纬度）
+     * @throws IOException 当 API 调用失败或未找到城市时
      */
-    public Location saveLocationByLatLon(double lat, double lon) throws IOException {
-        // 使用和风天气的城市查询API的反向解析？和风有单独的逆地理编码接口：geo/v2/city/lookup?location=经度,纬度
-        // 注意：和风天气的 city/lookup 支持传入 "经度,纬度" 进行反向查找
+    public Location reverseGeocode(double lat, double lon) throws IOException {
         String token = jwtUtil.generateToken();
         String locationParam = lon + "," + lat; // 经度在前，纬度在后
         String url = API_HOST + "/geo/v2/city/lookup?location=" + locationParam;
@@ -167,15 +172,29 @@ public class LocationService {
 
             JsonArray locations = json.getAsJsonArray("location");
             JsonObject first = locations.get(0).getAsJsonObject();
-            String cityName = first.get("name").getAsString();
 
             Location location = new Location();
-            location.setCityName(cityName);
+            location.setCityName(first.get("name").getAsString());
             location.setLatitude(lat);
             location.setLongitude(lon);
             location.setUpdateTime(System.currentTimeMillis());
-
-            return locationRepository.save(location);
+            return location;
         }
+    }
+
+    /**
+     * 根据经纬度保存位置（逆地理编码出城市名后入库）。
+     * 同一城市仅保留最新一条（存在则更新），避免每次上报都新增行导致表无限增长。
+     */
+    public Location saveLocationByLatLon(double lat, double lon) throws IOException {
+        Location fetched = reverseGeocode(lat, lon);
+        return locationRepository.findTopByCityNameOrderByUpdateTimeDesc(fetched.getCityName())
+                .map(existing -> {
+                    existing.setLatitude(fetched.getLatitude());
+                    existing.setLongitude(fetched.getLongitude());
+                    existing.setUpdateTime(System.currentTimeMillis());
+                    return locationRepository.save(existing);
+                })
+                .orElseGet(() -> locationRepository.save(fetched));
     }
 }

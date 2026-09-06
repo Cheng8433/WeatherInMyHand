@@ -1,6 +1,14 @@
 # WeatherInMyHand 后端 API 接口文档
 
-> 供前端开发者查阅。后端基地址：`http://10.0.2.2:8080`（Android 模拟器 → 宿主机）
+> 供前端开发者查阅。后端基地址在 Android 端由 `BuildConfig.BACK_HOST_API` 决定（见 `android/app/build.gradle`），当前为 `http://118.178.147.156:8080/api/`（阿里云试用实例）；本机调试可改为 `http://10.0.2.2:8080/api/`（模拟器 → 宿主机）。
+
+---
+
+## 〇、接口约定
+
+- 成功响应统一为 HTTP 200 + `{ "success": true, "data": ... }`。
+- 业务/上游错误统一由 `GlobalExceptionHandler` 处理，返回 **HTTP 200** + `{ "success": false, "message": "原因" }`（返回 200 是为了让 Android 端 `response.isSuccessful()` 为真，从而把真实错误文案透传给用户）。唯一例外：`GET /api/location/local` 无历史记录时返回 HTTP 404。
+- 天气相关的综合/空气质量接口返回的是 `weather_data` 实体快照，字段见下表。
 
 ---
 
@@ -40,6 +48,8 @@
 | `co` | `Double` | 一氧化碳（ppm） |
 | `so2` | `Double` | 二氧化硫（ppb） |
 
+> 接口响应的 `data` 还会额外带一个**不入库**的 `hourlyForecast` 数组（24h 温湿度趋势），结构为 `[{ "fxTime": "2026-09-05T14:00+08:00", "temp": "25", "humidity": "60" }, ...]`。
+
 ### 1.2 表 `locations` — 城市位置
 
 | 字段 | 类型 | 说明 |
@@ -56,11 +66,13 @@
 
 ### 2.1 `GET /api/weather/info` — 综合天气 + 空气质量
 
-**请求参数**
+**请求参数**（city 与 lat/lon 二选一）
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `city` | `String` | 是 | 城市名称，如"北京" |
+| `city` | `String` | 否 | 城市名称，如"北京" |
+| `lat` | `Double` | 否 | 纬度（需与 lon 同时传） |
+| `lon` | `Double` | 否 | 经度（需与 lat 同时传） |
 
 **成功响应 200**
 ```json
@@ -95,17 +107,17 @@
     "no2": 20.0,
     "o3": 80.0,
     "co": 0.5,
-    "so2": 5.0
+    "so2": 5.0,
+    "hourlyForecast": [
+      { "fxTime": "2026-09-05T14:00+08:00", "temp": "25", "humidity": "60" }
+    ]
   }
 }
 ```
 
-**错误响应 200**
+**错误响应（HTTP 200）**
 ```json
-{
-  "success": false,
-  "message": "获取城市位置失败：北京"
-}
+{ "success": false, "message": "缺少城市名或经纬度参数" }
 ```
 
 ---
@@ -118,30 +130,19 @@
 |---|---|---|---|
 | `city` | `String` | 是 | 城市名称，如"北京" |
 
-**成功响应 200**（天气相关字段均为 `null`）
+**成功响应 200**（天气相关字段均为 `null`，空气质量字段见 2.1 示例的空气质量部分）
+
 ```json
 {
   "success": true,
   "data": {
-    "id": 1,
+    "id": 2,
     "cityName": "北京",
     "updateTime": 1714192000000,
     "weather": null,
-    "temperature": null,
-    "feelsLike": null,
-    "humidity": null,
-    "windDir": null,
-    "windScale": null,
-    "windSpeed": null,
-    "precip": null,
-    "pressure": null,
-    "vis": null,
-    "cloud": null,
-    "dew": null,
     "aqi": 55,
     "aqiUs": 55,
     "aqiCN": 42,
-    "aqiQa": null,
     "airQuality": "Good",
     "primaryPollutant": "pm2p5",
     "pm25": "15.0",
@@ -156,95 +157,54 @@
 }
 ```
 
-**错误响应 200**
+**错误响应（HTTP 200）**
 ```json
-{
-  "success": false,
-  "message": "获取城市位置失败：北京"
-}
+{ "success": false, "message": "未找到城市：北京" }
 ```
 
 ---
 
-### 2.3 `GET /api/location/search` — 查城市经纬度（数据库 + API 回退）
+### 2.3 `POST /api/location/save` — 保存位置（客户端每次定位/搜索后调用）
 
-**请求参数**
+**请求体**（两种方式）
 
-| 参数 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| `city` | `String` | 是 | 城市名称，如"西安" |
+- 定位场景：传经纬度（服务端用 QWeather 逆地理编码解析出城市名并保存）
+  ```json
+  { "latitude": 39.9042, "longitude": 116.4074 }
+  ```
+- 手动搜索场景：只传城市名（lat/lon 传 0 或省略）
+  ```json
+  { "cityName": "北京", "latitude": 0, "longitude": 0 }
+  ```
+
+**成功响应 200**（返回保存后的 `Location` 实体）
+
+```json
+{ "id": 1, "cityName": "北京", "latitude": 39.9042, "longitude": 116.4074, "updateTime": 1714192000000 }
+```
+
+**错误响应（HTTP 200）**
+```json
+{ "success": false, "message": "无效的请求参数" }
+```
+
+---
+
+### 2.4 `GET /api/location/local` — 获取最近一次保存的位置（冷启动恢复用，无参数）
+
+> 注意：此接口**不接收 city 参数**，返回的是全库时间戳最新的一条 `locations` 记录（跨城市）。
 
 **成功响应 200**
 ```json
 {
-  "cityName": "西安",
-  "latitude": 34.26,
-  "longitude": 108.94,
-  "updateTime": 1714192000000
+  "success": true,
+  "data": { "cityName": "北京", "latitude": 39.9042, "longitude": 116.4074 }
 }
 ```
 
-**错误响应 404**
+**无历史记录 → HTTP 404**
 ```json
-{
-  "error": "未找到城市：西安"
-}
-```
-
----
-
-### 2.4 `GET /api/location/local` — 仅查数据库（不调 API）
-
-**请求参数**
-
-| 参数 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| `city` | `String` | 是 | 城市名称 |
-
-**成功响应 200**（返回完整 `Location` 实体）
-```json
-{
-  "id": 1,
-  "cityName": "西安",
-  "latitude": 34.26,
-  "longitude": 108.94,
-  "updateTime": 1714192000000
-}
-```
-
-**错误响应 404**
-```json
-{
-  "error": "数据库中未找到城市：西安"
-}
-```
-
----
-
-### 2.5 `GET /api/location/fetch` — 强制调 API 获取位置（不保存，仅测试）
-
-**请求参数**
-
-| 参数 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| `city` | `String` | 是 | 城市名称 |
-
-**成功响应 200**（`id` 为 `null`，因未持久化）
-```json
-{
-  "id": null,
-  "cityName": "西安",
-  "latitude": 34.26,
-  "longitude": 108.94,
-  "updateTime": 1714192000000
-}
-```
-
-**错误响应 500**
-```json
-{
-  "error": "调用和风 API 失败：和风天气 API 错误，code：xxx"
-}
+{ "success": false, "message": "没有历史位置" }
 ```
 
 ---
@@ -253,10 +213,9 @@
 
 | 方法 | 路径 | 用途 |
 |---|---|---|
-| `GET` | `/api/weather/info?city=北京` | 天气 + 空气质量综合 |
+| `GET` | `/api/weather/info` | 天气 + 空气质量综合（city 或 lat/lon） |
 | `GET` | `/api/weather/air?city=北京` | 仅空气质量 |
-| `GET` | `/api/location/search?city=北京` | 查经纬度（DB 优先 → API 回退） |
-| `GET` | `/api/location/local?city=北京` | 仅查数据库 |
-| `GET` | `/api/location/fetch?city=北京` | 强制调 API（不保存，测试用） |
+| `POST` | `/api/location/save` | 保存定位/搜索的城市（逆地理编码或城市名检索） |
+| `GET` | `/api/location/local` | 获取最近一次保存的位置（无参数） |
 
-> 注意：`/api/weather/*` 两个端点标注了 `@CrossOrigin(origins = "*")`，允许跨域；`/api/location/*` 未标注跨域。
+> 注：`/api/weather/*` 标注了 `@CrossOrigin(origins = "*")`；`/api/location/*` 未标注（原生 App 无跨域限制，如接 Web 端需自行补充）。

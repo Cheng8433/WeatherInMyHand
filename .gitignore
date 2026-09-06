@@ -47,9 +47,20 @@ Desktop.ini
 # ─── Logs ─────────────────────────────────────────────
 logs/
 *.log
+# 误入库的构建日志抓取（command 重定向产物）
+*_output.txt
+*_result.txt
 
 # ─── Misc ─────────────────────────────────────────────
 *.tmp
 *.bak
 *.orig
 *.rej
+
+# ─── Secrets / private keys ───────────────────────────
+*.pem
+.env
+
+# ─── H2 file database (backend/data/ 与仓库根运行残留) ─
+backend/data/
+/data/

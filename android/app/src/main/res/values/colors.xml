@@ -1,31 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 原styles.xml引用的颜色 -->
+    <!-- ===== 基础色（跨主题共用） ===== -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#FF000000</color>
     <color name="purple_500">#9C27B0</color>
     <color name="purple_700">#7B1FA2</color>
     <color name="teal_200">#80CBC4</color>
-    <color name="white">#FFFFFF</color>
-    
-    <!-- activity_main.xml引用的颜色 -->
-    <color name="primary">#2196F3</color>
-    <color name="text_primary">#333333</color>
-    <color name="text_secondary">#666666</color>
-    <color name="background">#f5f5f5</color>
-    
-    <!-- 渐变颜色 (不再使用，但保留以防引用) -->
-    <color name="gradient_start">#2196F3</color>
-    <color name="gradient_end">#1976D2</color>
-    
-    <!-- AQI Colors -->
+
+    <!-- ===== AQI 分级色（跨主题一致，保证空气质量可读性） ===== -->
     <color name="aqi_excellent">#4CAF50</color>
     <color name="aqi_good">#FFEB3B</color>
     <color name="aqi_light_pollution">#FF9800</color>
     <color name="aqi_moderate_pollution">#F44336</color>
     <color name="aqi_heavy_pollution">#9C27B0</color>
-    
-    <!-- Light green for top area and search button -->
+
+    <!-- ===== 旧值（供遗留 drawable/styles 引用，无布局引用时可不删） ===== -->
+    <color name="primary">#2196F3</color>
+    <color name="gradient_start">#2196F3</color>
+    <color name="gradient_end">#1976D2</color>
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#666666</color>
+    <color name="background">#f5f5f5</color>
     <color name="light_green">#C8E6C9</color>
-    
-    <!-- Light blue for ActionBar background -->
     <color name="light_blue">#BBDEFB</color>
+
+    <!-- ===== 主题 1 · 天蓝·晴（浅，默认） ===== -->
+    <color name="sky_page">#EDF4FB</color>
+    <color name="sky_card">#FFFFFF</color>
+    <color name="sky_header">#2196F3</color>
+    <color name="sky_text_primary">#1B2A38</color>
+    <color name="sky_text_secondary">#5E7A99</color>
+    <color name="sky_accent">#1E88E5</color>
+
+    <!-- ===== 主题 2 · 深蓝·夜空（暗） ===== -->
+    <color name="night_page">#0D1420</color>
+    <color name="night_card">#182332</color>
+    <color name="night_header">#243550</color>
+    <color name="night_text_primary">#E9F0FA</color>
+    <color name="night_text_secondary">#8EA3BE</color>
+    <color name="night_accent">#7FB3F0</color>
+
+    <!-- ===== 主题 3 · 森林·青绿（浅） ===== -->
+    <color name="forest_page">#EFF5ED</color>
+    <color name="forest_card">#FFFFFF</color>
+    <color name="forest_header">#3C8A4D</color>
+    <color name="forest_text_primary">#24312A</color>
+    <color name="forest_text_secondary">#5F7262</color>
+    <color name="forest_accent">#2F7D46</color>
+
+    <!-- ===== 主题 4 · 暖橙·日落（浅） ===== -->
+    <color name="sunset_page">#FBF3E8</color>
+    <color name="sunset_card">#FFFFFF</color>
+    <color name="sunset_header">#EF7B2B</color>
+    <color name="sunset_text_primary">#3B2E1E</color>
+    <color name="sunset_text_secondary">#8C6C49</color>
+    <color name="sunset_accent">#D8600F</color>
 </resources>

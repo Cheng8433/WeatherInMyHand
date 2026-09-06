@@ -14,7 +14,7 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "BACK_HOST_API", "\"https://sy12413la4458.vicp.fun/api/\""
+        buildConfigField "String", "BACK_HOST_API", "\"http://118.178.147.156:8080/api/\""
     }
 
     buildTypes {

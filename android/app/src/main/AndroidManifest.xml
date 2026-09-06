@@ -10,9 +10,10 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="掌中天气"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WeatherApp"
+        android:theme="@style/Theme.Weather.Sky"
         android:usesCleartextTraffic="true"
         tools:replace="android:label">   <!-- 添加这一行 -->
 
@@ -25,8 +26,5 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".WeatherDetailActivity"
-            android:exported="false" />
     </application>
 </manifest>
