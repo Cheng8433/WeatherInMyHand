@@ -66,3 +66,7 @@ keystore.properties
 # ─── H2 file database (backend/data/ 与仓库根运行残留) ─
 backend/data/
 /data/
+
+# ─── 本地个人调试脚本（不入库，保持工作区干净） ──────
+/_*.ps1
+/_names.txt
