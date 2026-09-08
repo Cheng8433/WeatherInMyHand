@@ -2,20 +2,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 定位（运行时申请）+ 联网（冷启动、搜索、定位均需） -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="掌中天气"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Weather.Sky"
         android:usesCleartextTraffic="true"
-        tools:replace="android:label">   <!-- 添加这一行 -->
+        tools:replace="android:label,android:allowBackup">
+
+        <!--
+            合规说明：
+            1) allowBackup=false：App 不建账号、本地只存天气/搜索缓存，关掉备份以免位置等
+               本地数据被 adb 备份提取。换机无账号可迁，重搜即可。
+            2) usesCleartextTraffic=true 是【过渡】：后端当前为 http://118.178.147.156:8080，
+               尚无 HTTPS。域名 + 证书落地后须改回 false（或上 networkSecurityConfig 白名单）
+               再发布，否则有明文流量合规风险。
+            3) 定位/网络权限均声明，无多余项。
+        -->
 
         <activity
             android:name=".MainActivity"

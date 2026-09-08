@@ -29,7 +29,7 @@
     <color name="sky_card">#FFFFFF</color>
     <color name="sky_header">#2196F3</color>
     <color name="sky_text_primary">#1B2A38</color>
-    <color name="sky_text_secondary">#5E7A99</color>
+    <color name="sky_text_secondary">#40556E</color>
     <color name="sky_accent">#1E88E5</color>
 
     <!-- ===== 主题 2 · 深蓝·夜空（暗） ===== -->
@@ -45,7 +45,7 @@
     <color name="forest_card">#FFFFFF</color>
     <color name="forest_header">#3C8A4D</color>
     <color name="forest_text_primary">#24312A</color>
-    <color name="forest_text_secondary">#5F7262</color>
+    <color name="forest_text_secondary">#465749</color>
     <color name="forest_accent">#2F7D46</color>
 
     <!-- ===== 主题 4 · 暖橙·日落（浅） ===== -->
@@ -53,6 +53,24 @@
     <color name="sunset_card">#FFFFFF</color>
     <color name="sunset_header">#EF7B2B</color>
     <color name="sunset_text_primary">#3B2E1E</color>
-    <color name="sunset_text_secondary">#8C6C49</color>
+    <color name="sunset_text_secondary">#6B5237</color>
     <color name="sunset_accent">#D8600F</color>
+
+    <!-- ===== 半透明卡片底 glassCard（首页动效天空透出用） ===== -->
+    <!-- 浅色主题：alpha≈60%（#99）保正文可读、动效仍隐约透出；数值越小越透。
+         与加深的 textSecondary 搭配，使卡片小字在天空顶部最饱和区也 ≥4.5:1 -->
+    <color name="sky_glass">#99FFFFFF</color>
+    <color name="forest_glass">#99FFFFFF</color>
+    <color name="sunset_glass">#99FFFFFF</color>
+    <!-- 暗色主题：深色玻璃上放浅色文字，无需同比例提不透明 -->
+    <color name="night_glass">#8C1B2A40</color>
+
+    <!-- ===== 主题 5 · 星幕·沉浸（暗）：深空底色，让首页动效成为全屏主角 ===== -->
+    <color name="immerse_header">#232A54</color>
+    <color name="immerse_page">#0A0D1A</color>
+    <color name="immerse_card">#1B2140</color>
+    <color name="immerse_text_primary">#F2F4FF</color>
+    <color name="immerse_text_secondary">#A9B2D6</color>
+    <color name="immerse_glass">#3D0D1220</color>
+    <color name="immerse_accent">#7BE0FF</color>
 </resources>

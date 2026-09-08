@@ -8,5 +8,7 @@
         <attr name="textSecondary" format="color" />
         <attr name="headerBackground" format="color" />
         <attr name="onHeaderText" format="color" />
+        <!-- 半透明卡片底：首页今天页用于让动效天空透出，同时保证正文可读 -->
+        <attr name="glassCard" format="color" />
     </declare-styleable>
 </resources>

@@ -71,7 +71,7 @@
                             android:id="@+id/tvAqiDesc"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="空气质量指数"
+                            android:text="@string/air_quality_index"
                             android:textSize="14sp"
                             android:textColor="?attr/textSecondary"
                             android:layout_marginTop="6dp" />
@@ -102,7 +102,7 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="首要污染物"
+                            android:text="@string/air_primary_pollutant"
                             android:textSize="13sp"
                             android:textColor="?attr/textSecondary" />
 
@@ -121,7 +121,7 @@
                         android:id="@+id/tvAqiAssessment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="获取中…"
+                        android:text="@string/air_loading"
                         android:textSize="15sp"
                         android:textColor="?attr/textPrimary"
                         android:layout_marginTop="12dp"
@@ -147,7 +147,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="污染物浓度"
+                        android:text="@string/air_pollutant_title"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textPrimary" />
@@ -155,7 +155,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="单位：μg/m³（CO 为 mg/m³）"
+                        android:text="@string/air_unit_hint"
                         android:textSize="11sp"
                         android:textColor="?attr/textSecondary"
                         android:layout_marginTop="2dp" />
@@ -325,7 +325,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="健康建议"
+                        android:text="@string/air_health_title"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textPrimary" />
@@ -334,7 +334,7 @@
                         android:id="@+id/tvHealthAdvice"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="获取中…"
+                        android:text="@string/air_loading"
                         android:textSize="14sp"
                         android:textColor="?attr/textSecondary"
                         android:layout_marginTop="8dp"

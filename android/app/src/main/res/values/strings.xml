@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 应用名 -->
+    <string name="app_name">掌中天气</string>
+
+    <!-- ===== 底部导航 Tab ===== -->
+    <string name="tab_today">今天</string>
+    <string name="tab_air">空气质量</string>
+    <string name="tab_trend">趋势</string>
+
+    <!-- ===== 顶栏 header_bar ===== -->
+    <string name="header_current_city">当前城市</string>
+    <string name="header_city_loading">获取定位中…</string>
+    <string name="header_city_unavailable">未获取到位置</string>
+    <string name="hint_search_city">搜索城市，如 北京</string>
+    <string name="cd_refresh">刷新</string>
+    <string name="cd_theme">切换主题</string>
+    <string name="cd_search">搜索</string>
+
+    <!-- ===== 通用动作 / 退出确认 ===== -->
+    <string name="action_cancel">取消</string>
+    <string name="action_retry">重试</string>
+    <string name="action_exit">退出</string>
+    <string name="exit_title">退出掌中天气</string>
+    <string name="exit_message">确定要退出吗？</string>
+
+    <!-- ===== 错误 / 加载反馈（居中浮层 / toast） ===== -->
+    <string name="error_load_failed_default">加载失败，请检查网络后重试</string>
+    <string name="error_load_failed">加载失败</string>
+    <string name="error_load_failed_short">加载失败，请稍后再试</string>
+    <string name="error_city_not_found">无法加载该城市，请检查网络后重试</string>
+    <string name="error_search_not_found">未找到该城市天气信息</string>
+    <string name="error_no_network">网络不可用，请检查网络连接</string>
+    <string name="error_network_error">网络错误</string>
+    <string name="error_load_weather_failed">加载天气数据失败</string>
+    <string name="error_get_weather_failed">获取天气数据失败</string>
+    <string name="error_parse_failed">解析失败</string>
+    <string name="error_server">服务器错误 %1$d</string>
+    <string name="toast_use_cache">连接失败，显示上次缓存数据</string>
+
+    <!-- ===== 搜索 / 刷新提示 ===== -->
+    <string name="search_toast_empty">请输入城市名称</string>
+    <string name="refresh_toast_no_city">还没有可刷新的城市，先搜索或定位</string>
+
+    <!-- ===== 定位提示 ===== -->
+    <string name="permission_denied">需要定位权限才能显示位置</string>
+    <string name="location_no_network">网络不可用，无法获取定位</string>
+    <string name="location_service_off">请开启位置服务（GPS 或网络定位）</string>
+    <string name="location_provider_off">%1$s 定位已关闭</string>
+    <string name="location_unavailable">无法获取位置，请检查 GPS 或网络</string>
+
+    <!-- ===== 今天页 page_today ===== -->
+    <string name="weather_emoji_placeholder">⛅</string>
+    <string name="today_real_time">实时数据</string>
+    <string name="today_feels">体感温度</string>
+    <string name="today_humidity">湿度</string>
+    <string name="today_cloud">云量</string>
+    <string name="today_vis">能见度</string>
+    <string name="today_pressure">气压</string>
+    <string name="today_precip">降水</string>
+    <string name="today_dew">露点</string>
+    <string name="today_wind_speed">风速</string>
+    <string name="today_wind_card">🌬 风</string>
+    <string name="hero_met_grid_format">体感 %1$s · 湿度 %2$s</string>
+    <string name="wind_speed_format">风速 %1$d km/h</string>
+
+    <!-- ===== 空气质量页 page_air ===== -->
+    <string name="air_quality_index">空气质量指数</string>
+    <string name="air_primary_pollutant">首要污染物</string>
+    <string name="air_loading">获取中…</string>
+    <string name="air_pollutant_title">污染物浓度</string>
+    <string name="air_unit_hint">单位：μg/m³（CO 为 mg/m³）</string>
+    <string name="air_health_title">健康建议</string>
+    <string name="air_none">暂无空气质量数据</string>
+
+    <!-- ===== 趋势页 page_trend ===== -->
+    <string name="trend_title">24 小时温湿度趋势</string>
+    <string name="trend_loading">逐小时预报 · 加载中…</string>
+    <string name="trend_howto_title">👀 怎么看</string>
+    <string name="trend_howto_body">折线图展示未来 24 小时逐小时的温度与湿度变化，纵轴刻度会随数值自动缩放。当前城市的最新数据快照会保存，但逐小时预报为临时数据，不做历史存档。</string>
+    <string name="trend_none">暂无逐小时预报数据</string>
+    <string name="trend_24h_format">未来 24 小时 · 最高 %1$s · 最低 %2$s</string>
+    <string name="chart_series_temp">温度 (°C)</string>
+    <string name="chart_series_hum">湿度 (%)</string>
+
+    <!-- ===== 主题选择（主题名在 arrays.xml 汇总引用） ===== -->
+    <string name="theme_pick_title">选择主题</string>
+    <string name="theme_sky">天蓝 · 晴（浅）</string>
+    <string name="theme_night">深蓝 · 夜空（暗）</string>
+    <string name="theme_forest">森林 · 青绿（浅）</string>
+    <string name="theme_sunset">暖橙 · 日落（浅）</string>
+    <string name="theme_immersive">星幕 · 沉浸（暗）</string>
+
+</resources>

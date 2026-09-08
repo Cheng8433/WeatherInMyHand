@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主题名（顺序与 ThemeHelper.STYLES / DARK 一一对应，勿调换） -->
+    <string-array name="theme_names">
+        <item>@string/theme_sky</item>
+        <item>@string/theme_night</item>
+        <item>@string/theme_forest</item>
+        <item>@string/theme_sunset</item>
+        <item>@string/theme_immersive</item>
+    </string-array>
+</resources>

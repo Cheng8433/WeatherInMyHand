@@ -5,8 +5,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
-            android:scrollbars="none"
-            android:background="?attr/pageBackground">
+            android:scrollbars="none">
+            <!-- 背景留空透出 weatherScene 动效天空 -->
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -18,7 +18,7 @@
         <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/headerBackground"
+                app:cardBackgroundColor="?attr/glassCard"
                 app:cardCornerRadius="22dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -37,7 +37,7 @@
                         android:id="@+id/tvWeatherEmoji"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⛅"
+                        android:text="@string/weather_emoji_placeholder"
                         android:textSize="64sp"
                         android:gravity="center" />
 
@@ -47,7 +47,7 @@
                         android:layout_height="wrap_content"
                         android:text="--"
                         android:textSize="17sp"
-                        android:textColor="?attr/onHeaderText"
+                        android:textColor="?attr/textPrimary"
                         android:textStyle="bold"
                         android:layout_marginTop="4dp" />
 
@@ -65,7 +65,7 @@
                             android:text="--"
                             android:textSize="84sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/onHeaderText" />
+                            android:textColor="?attr/textPrimary" />
 
                     <TextView
                             android:id="@+id/tvTempUnit"
@@ -73,7 +73,7 @@
                             android:layout_height="wrap_content"
                             android:text="°C"
                             android:textSize="28sp"
-                            android:textColor="?attr/onHeaderText"
+                            android:textColor="?attr/textPrimary"
                             android:layout_marginBottom="18dp"
                             android:layout_marginStart="4dp" />
                 </LinearLayout>
@@ -84,8 +84,7 @@
                         android:layout_height="wrap_content"
                         android:text="--"
                         android:textSize="14sp"
-                        android:textColor="?attr/onHeaderText"
-                        android:alpha="0.82"
+                        android:textColor="?attr/textSecondary"
                         android:layout_marginTop="2dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -95,7 +94,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardBackgroundColor="?attr/glassCard"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/textSecondary"
@@ -110,7 +109,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="实时数据"
+                        android:text="@string/today_real_time"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textPrimary"
@@ -143,7 +142,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="体感温度"
+                                android:text="@string/today_feels"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -168,7 +167,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="湿度"
+                                android:text="@string/today_humidity"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -200,7 +199,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="云量"
+                                android:text="@string/today_cloud"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -225,7 +224,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="能见度"
+                                android:text="@string/today_vis"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -257,7 +256,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="气压"
+                                android:text="@string/today_pressure"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -282,7 +281,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="降水"
+                                android:text="@string/today_precip"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -314,7 +313,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="露点"
+                                android:text="@string/today_dew"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -339,7 +338,7 @@
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="风速"
+                                android:text="@string/today_wind_speed"
                                 android:textSize="12sp"
                                 android:textColor="?attr/textSecondary"
                                 android:layout_marginTop="2dp" />
@@ -353,7 +352,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="?attr/cardBackground"
+                app:cardBackgroundColor="?attr/glassCard"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp">
 
@@ -366,7 +365,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🌬 风"
+                        android:text="@string/today_wind_card"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textPrimary" />

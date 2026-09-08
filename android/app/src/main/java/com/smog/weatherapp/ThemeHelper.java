@@ -9,22 +9,20 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 /**
  * 主题选择：名称 → 样式映射、偏好保存/读取、选择弹窗。
  * 新增主题只需往数组里加一项（名称 + 对应 Theme.Weather.XXX 样式）。
+ * 名称文案外置在 strings.xml/arrays.xml（theme_names），顺序须与 STYLES/DARK 一致。
  */
 public final class ThemeHelper {
-
-    public static final String[] NAMES = {
-            "天蓝 · 晴（浅）",
-            "深蓝 · 夜空（暗）",
-            "森林 · 青绿（浅）",
-            "暖橙 · 日落（浅）"
-    };
 
     private static final int[] STYLES = {
             R.style.Theme_Weather_Sky,
             R.style.Theme_Weather_Night,
             R.style.Theme_Weather_Forest,
-            R.style.Theme_Weather_Sunset
+            R.style.Theme_Weather_Sunset,
+            R.style.Theme_Weather_Immersive
     };
+
+    // 各主题是否暗色调（与 NAMES/STYLES 一一对应；驱动动效星月等昼夜判定）
+    private static final boolean[] DARK = {false, true, false, false, true};
 
     private static final String PREFS = "weather_theme";
     private static final String KEY_INDEX = "index";
@@ -47,28 +45,41 @@ public final class ThemeHelper {
     /**
      * 必须在 Activity.setContentView 之前调用，否则主题不会生效。
      */
+    /** 主题是否暗色调（深底出星月、动效对比强）。 */
+    public static boolean isDark(int index) {
+        return index >= 0 && index < DARK.length && DARK[index];
+    }
+
     public static void applyTheme(Activity activity) {
         activity.setTheme(STYLES[currentIndex(activity)]);
     }
 
+    /** 主题名（自 arrays.xml 读取，顺序与 STYLES/DARK 对应）。 */
+    private static String[] names(Context context) {
+        return context.getResources().getStringArray(R.array.theme_names);
+    }
+
     public static String currentName(Context context) {
-        return NAMES[currentIndex(context)];
+        String[] names = names(context);
+        int idx = Math.max(0, Math.min(names.length - 1, currentIndex(context)));
+        return names[idx];
     }
 
     /**
      * 弹出单选主题列表；选中后保存并回调（由调用方负责 recreate）。
      */
     public static void showPicker(Activity activity, final Runnable onSelected) {
+        String[] names = names(activity);
         new MaterialAlertDialogBuilder(activity)
-                .setTitle("选择主题")
-                .setSingleChoiceItems(NAMES, currentIndex(activity), (dialog, which) -> {
+                .setTitle(R.string.theme_pick_title)
+                .setSingleChoiceItems(names, currentIndex(activity), (dialog, which) -> {
                     save(activity, which);
                     dialog.dismiss();
                     if (onSelected != null) {
                         onSelected.run();
                     }
                 })
-                .setNegativeButton("取消", null)
+                .setNegativeButton(R.string.action_cancel, null)
                 .show();
     }
 }

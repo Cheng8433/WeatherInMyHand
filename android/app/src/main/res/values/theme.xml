@@ -13,6 +13,7 @@
         <item name="textSecondary">@color/sky_text_secondary</item>
         <item name="headerBackground">@color/sky_header</item>
         <item name="onHeaderText">@color/white</item>
+        <item name="glassCard">@color/sky_glass</item>
 
         <item name="colorPrimary">@color/sky_accent</item>
         <item name="colorPrimaryVariant">@color/sky_header</item>
@@ -31,6 +32,7 @@
         <item name="textSecondary">@color/night_text_secondary</item>
         <item name="headerBackground">@color/night_header</item>
         <item name="onHeaderText">@color/white</item>
+        <item name="glassCard">@color/night_glass</item>
 
         <item name="colorPrimary">@color/night_accent</item>
         <item name="colorPrimaryVariant">@color/night_header</item>
@@ -50,6 +52,7 @@
         <item name="textSecondary">@color/forest_text_secondary</item>
         <item name="headerBackground">@color/forest_header</item>
         <item name="onHeaderText">@color/white</item>
+        <item name="glassCard">@color/forest_glass</item>
 
         <item name="colorPrimary">@color/forest_accent</item>
         <item name="colorPrimaryVariant">@color/forest_header</item>
@@ -68,6 +71,7 @@
         <item name="textSecondary">@color/sunset_text_secondary</item>
         <item name="headerBackground">@color/sunset_header</item>
         <item name="onHeaderText">@color/white</item>
+        <item name="glassCard">@color/sunset_glass</item>
 
         <item name="colorPrimary">@color/sunset_accent</item>
         <item name="colorPrimaryVariant">@color/sunset_header</item>
@@ -76,5 +80,25 @@
         <item name="android:windowBackground">@color/sunset_page</item>
         <item name="android:statusBarColor">@color/sunset_header</item>
         <item name="android:navigationBarColor">@color/sunset_page</item>
+    </style>
+
+    <!-- 主题 5 · 星幕·沉浸（暗）：卡片近乎全透，让首页动效天空整屏透出成为主角 -->
+    <style name="Theme.Weather.Immersive" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="pageBackground">@color/immerse_page</item>
+        <item name="cardBackground">@color/immerse_card</item>
+        <item name="textPrimary">@color/immerse_text_primary</item>
+        <item name="textSecondary">@color/immerse_text_secondary</item>
+        <item name="headerBackground">@color/immerse_header</item>
+        <item name="onHeaderText">@color/white</item>
+        <item name="glassCard">@color/immerse_glass</item>
+
+        <item name="colorPrimary">@color/immerse_accent</item>
+        <item name="colorPrimaryVariant">@color/immerse_header</item>
+        <item name="colorOnPrimary">@color/immerse_page</item>
+        <item name="colorSurface">@color/immerse_card</item>
+        <item name="android:windowBackground">@color/immerse_page</item>
+        <item name="android:statusBarColor">@color/immerse_header</item>
+        <item name="android:navigationBarColor">@color/immerse_page</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

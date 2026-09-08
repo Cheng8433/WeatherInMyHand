@@ -10,6 +10,30 @@ public final class WeatherFormat {
     private WeatherFormat() {
     }
 
+    /**
+     * 天气现象分类，供动效背景等需要区分“晴/多云/雨/雪…”的场景使用。
+     * 判断顺序与 {@link #emojiFor} 保持一致。
+     */
+    public enum Kind {
+        THUNDER, SNOW, RAIN, FOG, WIND, OVERCAST, PARTLY_CLOUDY, SUNNY, DEFAULT
+    }
+
+    /** 天气文本 → 现象分类（雷→雪→雨→雾霾→风→阴→云→晴）。 */
+    public static Kind kindOf(String weather) {
+        if (weather == null || weather.isEmpty()) {
+            return Kind.DEFAULT;
+        }
+        if (weather.contains("雷")) return Kind.THUNDER;
+        if (weather.contains("雪")) return Kind.SNOW;
+        if (weather.contains("雨")) return Kind.RAIN;
+        if (weather.contains("雾") || weather.contains("霾")) return Kind.FOG;
+        if (weather.contains("风")) return Kind.WIND;
+        if (weather.contains("阴")) return Kind.OVERCAST;
+        if (weather.contains("云")) return Kind.PARTLY_CLOUDY;
+        if (weather.contains("晴")) return Kind.SUNNY;
+        return Kind.DEFAULT;
+    }
+
     /** 天气文本 → 大图标 emoji（按关键字先后判断）。 */
     public static String emojiFor(String weather) {
         if (weather == null || weather.isEmpty()) {
