@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -49,6 +50,60 @@ public class WeatherService {
 
     private static final String API_HOST = "https://nx4nmurq3h.re.qweatherapi.com";
 
+    // ==================== 结果缓存（内存 TTL，命中免打和风；上游失败降级 stale） ====================
+
+    /** 缓存有效期：实时天气/空气质量/逐小时 10 分钟内视为足够新，之后才允许重新请求和风 */
+    private static final long CACHE_TTL_MS = 10 * 60 * 1000L;
+
+    /** key = 城市名（trim 后）。info（综合）与 air（仅空气）分开两套快照，避免缓存条目互相覆盖。 */
+    private final Map<String, CacheEntry> infoCache = new ConcurrentHashMap<>();
+    private final Map<String, CacheEntry> airCache = new ConcurrentHashMap<>();
+
+    /** 一次成功结果的不可变快照：数据 + 抓取时刻 */
+    private static final class CacheEntry {
+        final Weather weather;
+        final long fetchedAt;
+        CacheEntry(Weather weather, long fetchedAt) {
+            this.weather = weather;
+            this.fetchedAt = fetchedAt;
+        }
+    }
+
+    /** 服务层结果：stale=true 表示本次上游失败，weather 为最近一次成功快照（供 controller 加标记） */
+    public static final class WeatherResult {
+        private final Weather weather;
+        private final boolean stale;
+        WeatherResult(Weather weather, boolean stale) {
+            this.weather = weather;
+            this.stale = stale;
+        }
+        public Weather getWeather() { return weather; }
+        public boolean isStale() { return stale; }
+    }
+
+    private String cacheKey(String cityName) {
+        return cityName == null ? "" : cityName.trim();
+    }
+
+    /** 命中且未过期则返回条目，否则返回 null（过期条目先不删，留给降级用） */
+    private CacheEntry fresh(Map<String, CacheEntry> cache, String key) {
+        CacheEntry e = cache.get(key);
+        if (e != null && System.currentTimeMillis() - e.fetchedAt < CACHE_TTL_MS) {
+            return e;
+        }
+        return null;
+    }
+
+    /** 上游失败时：有缓存快照就降级返回（带 stale），否则原样抛出让统一异常处理兜底 */
+    private WeatherResult staleOrRethrow(Map<String, CacheEntry> cache, String key, IOException cause)
+            throws IOException {
+        CacheEntry stale = cache.get(key);
+        if (stale != null) {
+            log.warn("上游请求失败（{}），降级返回城市【{}】的最近一次成功缓存", cause.getMessage(), key);
+            return new WeatherResult(stale.weather, true);
+        }
+        throw cause;
+    }
 
     @Deprecated
     public Location saveLocation(String cityName, Double latitude, Double longitude) {
@@ -427,13 +482,49 @@ public class WeatherService {
     }
 
     /**
-     * 根据经纬度获取天气和空气质量（内部先逆地理编码得城市名）
+     * 根据经纬度获取天气和空气质量（内部先逆地理编码得城市名），带缓存与失败降级。
      */
-    public Weather getWeatherAndAirQualityByLatLon(double lat, double lon) throws IOException {
+    public WeatherResult getWeatherAndAirQualityByLatLon(double lat, double lon) throws IOException {
         // 复用 LocationService 的逆地理编码（只查不存，避免每次 GPS 上报新增 location 行）
         String cityName = locationService.reverseGeocode(lat, lon).getCityName();
-        // 再按城市名走既有链路获取天气 + 空气质量 + 逐小时
-        return getWeatherAndAirQuality(cityName);
+        // 再按城市名走统一缓存链路获取天气 + 空气质量 + 逐小时
+        return getWeatherAndAirQualityCached(cityName);
+    }
+
+    /** /api/weather/info（城市版）带缓存入口：10 分钟内命中免打和风，失败时降级返回最近成功快照 */
+    public WeatherResult getWeatherAndAirQualityCached(String cityName) throws IOException {
+        String key = cacheKey(cityName);
+        CacheEntry hit = fresh(infoCache, key);
+        if (hit != null) {
+            log.debug("命中综合天气缓存：{}", key);
+            return new WeatherResult(hit.weather, false);
+        }
+        try {
+            Weather fresh = getWeatherAndAirQuality(cityName);
+            infoCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
+            log.debug("已刷新综合天气缓存：{}", key);
+            return new WeatherResult(fresh, false);
+        } catch (IOException e) {
+            return staleOrRethrow(infoCache, key, e);
+        }
+    }
+
+    /** /api/weather/air 带缓存入口：命中免打和风空气质量接口，失败时降级返回最近成功快照 */
+    public WeatherResult getAirQualityCached(String cityName) throws IOException {
+        String key = cacheKey(cityName);
+        CacheEntry hit = fresh(airCache, key);
+        if (hit != null) {
+            log.debug("命中空气质量缓存：{}", key);
+            return new WeatherResult(hit.weather, false);
+        }
+        try {
+            Weather fresh = getAirQualityByCity(cityName);
+            airCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
+            log.debug("已刷新空气质量缓存：{}", key);
+            return new WeatherResult(fresh, false);
+        } catch (IOException e) {
+            return staleOrRethrow(airCache, key, e);
+        }
     }
 
     // ==================== 安全的 JSON 解析辅助方法 ====================
