@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        后端为 IP 证书(ZeroSSL)，其链终点是 2023 年才发行的 Sectigo R46 公共根。
+        部分系统 CA 库未更新到的设备(如部分 Android 13 / 国产 ROM)未内置 R46 根，
+        会导致 HTTPS 握手失败(被 App 归为"网络错误")。
+        这里把 R46 公共根作为额外信任锚内置：保留 system 信任、仅做补缺，
+        R46 本就是全球公开信任根，内嵌无安全副作用，也不影响证书域名校验。
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/sectigo_r46" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

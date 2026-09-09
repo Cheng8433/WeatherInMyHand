@@ -390,5 +390,16 @@
                         android:layout_marginTop="2dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== 数据来源标注（合规：标明天气数据供应商） ===== -->
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="@string/source_qweather_footer"
+                android:textSize="12sp"
+                android:textColor="?attr/textSecondary"
+                android:alpha="0.7" />
     </LinearLayout>
 </ScrollView>

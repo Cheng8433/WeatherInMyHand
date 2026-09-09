@@ -21,9 +21,9 @@ android {
         applicationId "com.smog.weatherapp"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
-        buildConfigField "String", "BACK_HOST_API", "\"http://118.178.147.156:8080/api/\""
+        versionCode 3
+        versionName "1.0.2"
+        buildConfigField "String", "BACK_HOST_API", "\"https://118.178.147.156/api/\""
     }
 
     signingConfigs {

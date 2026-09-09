@@ -2,6 +2,7 @@ package com.smog.weatherapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     // header
     private TextView tvCityName;
     private EditText etSearchCity;
-    private ImageButton btnSearch, btnRefresh, btnTheme;
+    private ImageButton btnSearch, btnRefresh, btnTheme, btnAbout;
 
     // 三页根容器
     private ScrollView scrollToday, scrollAir, scrollTrend;
@@ -97,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
     private JSONObject lastData = null;
     private int currentTab = TAB_TODAY;
 
+    // 首启隐私同意：未同意前不发起任何定位/联网取数
+    private boolean weatherStarted = false;
+    private boolean privacyDialogUp = false;
+
     // 全局加载/错误重试 UI
     private View loadingBar, errorPanel, btnRetry, btnCancelRetry;
     private TextView tvErrorMsg;
@@ -111,12 +116,61 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initViews();
+        if (PrivacyStore.accepted(this)) {
+            startWeatherFlow();
+        }
+        // 未同意时由 onResume 弹出首启同意；同意后才真正开跑天气/定位
+        registerBackHandler();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 从「查看隐私政策全文」返回、或旋转等场景下若仍未同意，继续弹窗要求先同意
+        promptPrivacyConsent();
+    }
+
+    /** 通过隐私同意后才执行的天气主流程（缓存秒开 + 恢复上次城市 + GPS 定位）。 */
+    private void startWeatherFlow() {
+        weatherStarted = true;
         showTab(TAB_TODAY);
         bottomNav.setSelectedItemId(R.id.nav_today);
         paintLastCachedWeather();              // 启动先用本地缓存秒开（断网也有内容），联网后刷新覆盖
         loadCurrentLocationFromServer();       // 先显示上次查看的城市，零等待
         checkLocationPermission();             // 后台同时进行 GPS 定位
-        registerBackHandler();
+    }
+
+    /**
+     * 首启隐私政策同意弹窗（不可取消）。未同意前不发起定位/联网取数。
+     *  - 同意并继续 → 持久化同意态并启动天气主流程；
+     *  - 不同意 → 提示后退出；
+     *  - 查看全文 → 打开「关于与隐私」页，返回后若仍未同意会再次弹窗。
+     */
+    private void promptPrivacyConsent() {
+        if (weatherStarted || PrivacyStore.accepted(this) || privacyDialogUp || isFinishing()) {
+            return;
+        }
+        privacyDialogUp = true;
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.privacy_consent_title)
+                .setMessage(R.string.privacy_consent_summary)
+                .setCancelable(false)
+                .setPositiveButton(R.string.action_agree, (dialog, which) -> {
+                    PrivacyStore.setAccepted(this, true);
+                    startWeatherFlow();
+                })
+                .setNegativeButton(R.string.action_disagree, (dialog, which) -> {
+                    Toast.makeText(this, getString(R.string.privacy_consent_disagree_toast), Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .setNeutralButton(R.string.action_view_policy, (dialog, which) -> openPrivacyPage())
+                .setOnDismissListener(dialog -> privacyDialogUp = false)
+                .show();
+    }
+
+    /** 打开「关于与隐私」页。 */
+    private void openPrivacyPage() {
+        startActivity(new Intent(this, PrivacyActivity.class));
     }
 
     /** 返回键：输入法展开先收键盘；不在「今天」页先回首页；已在首页再弹退出确认。 */
@@ -165,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
         btnSearch = findViewById(R.id.btnSearch);
         btnRefresh = findViewById(R.id.btnRefresh);
         btnTheme = findViewById(R.id.btnTheme);
+        btnAbout = findViewById(R.id.btnAbout);
 
         scrollToday = findViewById(R.id.scrollToday);
         scrollAir = findViewById(R.id.scrollAir);
@@ -226,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         btnTheme.setOnClickListener(v -> ThemeHelper.showPicker(this, () -> recreate()));
+        btnAbout.setOnClickListener(v -> openPrivacyPage());
         btnRetry.setOnClickListener(v -> {
             // 不提前收起卡片：若重试仍失败，showErrorPanel 会因“卡片已可见”而补一条 toast 反馈
             if (retryAction != null) {
@@ -819,17 +875,9 @@ public class MainActivity extends AppCompatActivity {
             if (locationManager != null) {
                 locationManager.removeUpdates(locationListener);
             }
-            Location lastKnown = null;
-            if (isGpsEnabled) {
-                lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            }
-            if (lastKnown == null && isNetworkEnabled) {
-                lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            }
-            if (lastKnown != null) {
-                saveLocationToServer(lastKnown.getLatitude(), lastKnown.getLongitude());
-                loadWeatherDataByLocation(lastKnown.getLatitude(), lastKnown.getLongitude());
-            } else {
+            // 不做「最后已知位置」兜底：陈旧坐标可能来自模拟器默认/异地（如 Mountain View），
+            // 宁可不显示、也不误导。冷启动已由 location/local 恢复上次城市，此处仍无城市再提示。
+            if (currentCity.isEmpty()) {
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity.this, getString(R.string.location_unavailable), Toast.LENGTH_SHORT).show();
                     showCityFallbackIfPending();

@@ -59,6 +59,8 @@ logs/
 
 # ─── Secrets / private keys ───────────────────────────
 *.pem
+# 例外：Sectigo R46 公共根证书（公开非私钥）需随源码分发，供系统信任库较旧的设备内置信任
+!android/app/src/main/res/raw/sectigo_r46.pem
 *.keystore
 keystore.properties
 .env

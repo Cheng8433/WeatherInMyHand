@@ -92,4 +92,54 @@
     <string name="theme_sunset">暖橙 · 日落（浅）</string>
     <string name="theme_immersive">星幕 · 沉浸（暗）</string>
 
+    <!-- ===== 隐私政策 / 关于（合规起步，正文待主人核对后定稿） ===== -->
+    <string name="privacy_consent_title">隐私政策提示</string>
+    <string name="privacy_consent_summary">为向您展示所在城市的天气，我们需要在征得您同意后：使用定位权限获取您的位置（精度取决于您在系统设置的授权），并把城市信息发送给天气服务商（和风天气）查询。我们不会收集您的身份信息。请阅读并同意《隐私政策》后开始使用。</string>
+    <string name="action_agree">同意并继续</string>
+    <string name="action_disagree">不同意</string>
+    <string name="action_view_policy">查看隐私政策全文</string>
+    <string name="privacy_consent_disagree_toast">需同意隐私政策后才能使用本应用</string>
+
+    <string name="privacy_about_title">关于与隐私</string>
+    <string name="privacy_back_desc">返回</string>
+    <string name="privacy_policy_section">《隐私政策》</string>
+    <string name="about_section">关于</string>
+    <string name="about_version_label">版本</string>
+    <string name="about_source_label">天气数据来源</string>
+    <string name="about_source_qweather">和风天气（QWeather）</string>
+    <string name="about_copyright_line">天气数据 © 和风天气</string>
+    <string name="about_reset_consent">撤回隐私政策同意</string>
+    <string name="about_reset_consent_done">已撤回同意，下次启动将重新提示</string>
+    <string name="source_qweather_footer">天气数据来源：和风天气</string>
+    <string name="cd_about">关于与隐私</string>
+
+    <string name="privacy_policy_full">欢迎使用「掌中天气」。我们非常重视您的个人信息与隐私，本政策向您说明我们如何处理您的信息。
+
+一、我们收集的信息
+1. 定位信息：仅在您授权定位权限后，获取您设备的位置（精度由您在系统设置中授权的「精确/大致」决定），用于把天气切换到您所在城市。
+2. 城市信息：您手动搜索或浏览过的城市会被记录，用于下次打开时恢复您上次查看的城市。
+3. 我们不会收集您的姓名、手机号、账号、通讯录等身份信息。
+
+二、信息的使用
+我们仅将上述信息用于：向您展示对应城市的天气与空气质量，以及在冷启动时恢复您上次查看的城市，不会用于其他用途。
+
+三、第三方服务
+天气与空气质量数据由「和风天气」（QWeather）提供。为获取数据，我们会向和风天气提交城市名或经纬度；您的位置会先被转换为城市名后再发起请求。
+
+四、存储与期限
+我们会保留您最近查看/定位的城市，用于下次打开时快速恢复。这些记录存储于我们使用的云服务器。您可以随时在系统设置中关闭定位权限；如需删除已保存的城市记录，请通过您下载本应用的渠道页面与我们联系。
+
+五、您的权利
+您可以随时在系统设置中撤回定位权限；撤回后我们无法再自动定位，但您仍可手动搜索城市使用天气功能。您也可以在本应用「关于与隐私」页撤回对隐私政策的同意。
+
+六、未成年人
+本应用面向一般公众提供服务，不主动收集未成年人的个人信息。
+
+七、政策更新
+如本政策发生调整，我们会在此页面公布更新内容，并视需要在您下次启动时再次征得同意。
+
+八、联系我们
+如对本政策有任何疑问，或需要删除已保存的记录，请通过您下载本应用的渠道页面与我们联系。</string>
+
 </resources>
+

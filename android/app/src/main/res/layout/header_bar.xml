@@ -37,7 +37,9 @@
                     android:text="@string/header_city_loading"
                     android:textSize="25sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/onHeaderText" />
+                    android:textColor="?attr/onHeaderText"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
         </LinearLayout>
 
         <ImageButton
@@ -55,6 +57,14 @@
                 android:src="@drawable/ic_palette"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/cd_theme" />
+
+        <ImageButton
+                android:id="@+id/btnAbout"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_about"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_about" />
     </LinearLayout>
 
     <!-- 搜索栏 -->
