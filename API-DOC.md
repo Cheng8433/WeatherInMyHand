@@ -1,6 +1,6 @@
 # WeatherInMyHand 后端 API 接口文档
 
-> 供前端开发者查阅。后端基地址在 Android 端由 `BuildConfig.BACK_HOST_API` 决定（见 `android/app/build.gradle`），当前为 `http://118.178.147.156:8080/api/`（阿里云试用实例）；本机调试可改为 `http://10.0.2.2:8080/api/`（模拟器 → 宿主机）。
+> 供前端开发者查阅。后端基地址在 Android 端由 `BuildConfig.BACK_HOST_API` 决定（见 `android/app/build.gradle`），当前为 `https://118.178.147.156/api/`（阿里云试用实例，nginx TLS 反向代理，纯 IP 证书）；本机调试可改为 `http://10.0.2.2:8080/api/`（模拟器 → 宿主机）。
 
 ---
 

@@ -15,6 +15,7 @@ mvn clean package            # produce fat jar
 
 No tests exist in this repo.
 
+- Production runs the fat jar under systemd (`smog.service`); it binds **`127.0.0.1:8080`** via `Environment=SERVER_ADDRESS=127.0.0.1` (public plaintext 8080 is closed) and is fronted by nginx **443 TLS** (ZeroSSL IP cert) on the Aliyun ECS. Deploy files live on the server, not in this repo — see `HTTPS-DEPLOY.md`.
 - H2 is **file-backed** (`jdbc:h2:file:./data/smogdb`, `ddl-auto=update`) — data survives restarts. DB files land in `backend/data/` (gitignored).
 - Errors from all `/api/*` endpoints are centralized in `GlobalExceptionHandler` (`com.smog.exception`): **HTTP 200 + `{success:false, message}`**, so the Android client's `response.isSuccessful()` + `success`-bool contract keeps showing real error text.
 
@@ -55,11 +56,13 @@ JWT config (hardcoded in `JwtUtil.java`):
 
 - UI is a **single Activity** (`MainActivity`) + bottom `BottomNavigationView` with **3 tabs** (今天/空气质量/趋势). The three pages are `<include>` ScrollViews (`page_today`/`page_air`/`page_trend`) toggled by visibility — no Fragments. `WeatherDetailActivity` was **deleted**; its content moved into the tabs.
 - Data flow: after the city is resolved (GPS via `LocationManager`, or search), call `/api/weather/info?city=` **once**, cache the whole `data` JSONObject in `lastWeatherData`, then render all three pages from it (`renderToday`/`renderAir`/`renderTrend`).
+- In-flight-request guards (easy to break when adding new calls): `uiApplySeq` makes the **last-issued** request win — search / GPS / non-guarded refresh bump it, and a stale callback must still call `endLoad()` before returning or the loading bar sticks. The low-priority cold-start path (`loadWeatherData(city, true)`) deliberately does **not** bump it and keeps its own `isGpsResultApplied` check. `handleJson` reports read errors via `onFail` (never swallows them). `onDestroy` unregisters the location listener, drops the 10s timeout runnable and calls `httpClient.dispatcher().cancelAll()`.
 - 4 user-selectable themes (天蓝·晴 / Night / Forest / Sunset), chosen via a palette button in the header → `AlertDialog`; applied through `ThemeHelper` (`SharedPreferences` → `setTheme` before `setContentView` → `recreate()`). All colors come from custom attrs (`?attr/pageBackground|cardBackground|textPrimary|...`), never hardcoded hex.
 - Trend tab renders the **real 24h `hourlyForecast`** from `/api/weather/info` (temperature + humidity) with AnyChart; the `AnyChartView` is re-set each time the tab is opened, because a `GONE` page is not rendered until shown.
 - Helpers: `WeatherFormat` (emoji / wind-dir / pollutant label+unit / AQI color+level), `ThemeHelper` (theme index persistence). Custom launcher icon = vector adaptive (`mipmap-anydpi-v26` + fg/bg drawables) + legacy `mipmap-*dpi` PNGs.
-- Backend base URL is set as `BuildConfig.BACK_HOST_API` in `android/app/build.gradle` (`buildConfigField`) — currently `http://118.178.147.156:8080/api/` (Aliyun 3-month trial), NOT `10.0.2.2`.
-- `android:usesCleartextTraffic="true"` in manifest (plain HTTP allowed).
+- Backend base URL is set as `BuildConfig.BACK_HOST_API` in `android/app/build.gradle` (`buildConfigField`) — currently `https://118.178.147.156/api/` (Aliyun trial, HTTPS via ZeroSSL IP cert + nginx), NOT `10.0.2.2`.
+- Manifest sets `android:usesCleartextTraffic="false"` (cleartext off) and `android:networkSecurityConfig`; `res/xml/network_security_config.xml` trusts **system + the bundled Sectigo R46 public root** (`res/raw/sectigo_r46.pem`), so devices whose system CA store predates the 2023 R46 root can still complete TLS to the IP-cert backend (this was the real cause of a "网络错误" on Android 13).
+- Privacy compliance: first-launch non-cancelable consent gate (`PrivacyStore` SharedPreferences); About/Privacy page (`PrivacyActivity`) shows version, data-source (QWeather) note and reset-consent; header About entry + Today-page data-source footer.
 - Build with Android Studio; gradle wrapper is committed.
 
 ## Security & git
@@ -71,4 +74,5 @@ JWT config (hardcoded in `JwtUtil.java`):
 
 - No tests; no global HTTP-error statuses (intentional, see contract note above).
 - `weather_data`/`locations` are upserted by city (each city keeps one latest row), so size is bounded by distinct cities — old duplicates from before the upsert change remain but can be wiped safely.
+- **The upsert is not concurrency-safe**: `getWeatherByCity`/`getAirQualityByLatLon` are `@Transactional` (rollback + one persistence context), but the read-then-save still races at H2's default READ_COMMITTED, so two simultaneous first-time requests for the same city can both INSERT. The real fix is a **unique index on `city_name`**, deliberately deferred — existing duplicate rows would make it fail at startup. Clean the duplicates first, then add the index.
 - 24h hourly forecast is `@Transient` — never persisted, so "history" beyond the current snapshot doesn't exist server-side.

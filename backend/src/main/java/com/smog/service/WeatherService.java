@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -94,15 +95,22 @@ public class WeatherService {
         return null;
     }
 
-    /** 上游失败时：有缓存快照就降级返回（带 stale），否则原样抛出让统一异常处理兜底 */
-    private WeatherResult staleOrRethrow(Map<String, CacheEntry> cache, String key, IOException cause)
+    /**
+     * 上游失败时：有缓存快照就降级返回（带 stale），否则原样抛出让统一异常处理兜底。
+     * 兼容 RuntimeException（如定位解析失败）：直接冒泡会绕过“HTTP 200 + success:false”契约，
+     * 统一包装成 IOException，保证错误响应格式与其它端点一致。
+     */
+    private WeatherResult staleOrRethrow(Map<String, CacheEntry> cache, String key, Exception cause)
             throws IOException {
         CacheEntry stale = cache.get(key);
         if (stale != null) {
             log.warn("上游请求失败（{}），降级返回城市【{}】的最近一次成功缓存", cause.getMessage(), key);
             return new WeatherResult(stale.weather, true);
         }
-        throw cause;
+        if (cause instanceof IOException) {
+            throw (IOException) cause;
+        }
+        throw new IOException(cause.getMessage(), cause);
     }
 
     @Deprecated
@@ -121,6 +129,8 @@ public class WeatherService {
 
     // ==================== 实时天气 API ====================
 
+    // 事务覆盖“查最近一条 → 更新或新建 → save”的读改写，避免半途异常留下不一致行
+    @Transactional
     public Weather getWeatherByCity(double latitude, double longitude, String cityName) throws IOException {
         log.info("获取实时天气");
         String token = jwtUtil.generateToken();
@@ -235,6 +245,7 @@ public class WeatherService {
 
     // ==================== 空气质量 API ====================
 
+    @Transactional
     public Weather getAirQualityByLatLon(double latitude, double longitude, String cityName) throws IOException {
         log.info("获取空气质量，经度：{}，纬度：{}，城市名：{}", longitude, latitude, cityName);
         String token = jwtUtil.generateToken();
@@ -504,7 +515,7 @@ public class WeatherService {
             infoCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
             log.debug("已刷新综合天气缓存：{}", key);
             return new WeatherResult(fresh, false);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             return staleOrRethrow(infoCache, key, e);
         }
     }
@@ -522,7 +533,7 @@ public class WeatherService {
             airCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
             log.debug("已刷新空气质量缓存：{}", key);
             return new WeatherResult(fresh, false);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             return staleOrRethrow(airCache, key, e);
         }
     }
@@ -552,7 +563,13 @@ public class WeatherService {
 
     private Double getDouble(JsonObject obj, String key) {
         if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
-            return obj.get(key).getAsDouble();
+            try {
+                return obj.get(key).getAsDouble();
+            } catch (NumberFormatException | UnsupportedOperationException e) {
+                // 上游偶尔把数值字段返回成非数字（如 "" 或 "N/A"），不能让一个字段拖垮整次解析
+                log.warn("无法将字段 {} 解析为 Double: {}", key, obj.get(key));
+                return null;
+            }
         }
         return null;
     }
@@ -561,7 +578,7 @@ public class WeatherService {
         if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
             try {
                 return obj.get(key).getAsInt();
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException | UnsupportedOperationException e) {
                 log.warn("无法将字段 {} 解析为 Integer: {}", key, obj.get(key));
                 return null;
             }

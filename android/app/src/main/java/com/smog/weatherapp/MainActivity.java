@@ -90,10 +90,19 @@ public class MainActivity extends AppCompatActivity {
 
     private OkHttpClient httpClient = new OkHttpClient();
     private LocationManager locationManager;
+    /** 当前注册中的定位监听：保存引用以便 onDestroy 注销，避免 Activity 销毁后仍回调 */
+    private LocationListener locationListener;
     private String currentCity = "";
 
     private boolean hasPerformedInitialLocation = false;
     private boolean isGpsResultApplied = false;
+
+    /** 主线程 Handler 与定位超时任务：保存引用以便 onDestroy 移除未执行的延时回调 */
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable locationTimeoutRunnable;
+
+    /** 请求序号：只允许「最后发起」的那次结果落到 UI，避免并发返回时旧城市覆盖新城市 */
+    private int uiApplySeq = 0;
 
     private JSONObject lastData = null;
     private int currentTab = TAB_TODAY;
@@ -128,6 +137,20 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // 从「查看隐私政策全文」返回、或旋转等场景下若仍未同意，继续弹窗要求先同意
         promptPrivacyConsent();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 注销定位监听 + 取消定位超时回调：Activity 销毁后不应再有位置回调或延时任务
+        if (locationManager != null && locationListener != null) {
+            locationManager.removeUpdates(locationListener);
+        }
+        if (locationTimeoutRunnable != null) {
+            mainHandler.removeCallbacks(locationTimeoutRunnable);
+        }
+        // 取消所有在途 HTTP 请求，避免回调持有已销毁的 Activity
+        httpClient.dispatcher().cancelAll();
     }
 
     /** 通过隐私同意后才执行的天气主流程（缓存秒开 + 恢复上次城市 + GPS 定位）。 */
@@ -581,11 +604,16 @@ public class MainActivity extends AppCompatActivity {
             handleSearchFailure(cityName, getString(R.string.error_no_network));
             return;
         }
+        final int reqSeq = ++uiApplySeq;   // 本次搜索成为最新请求，更早的在途结果回来后会被丢弃
         String url = BASE_URL + "weather/info?city=" + urlEncode(cityName);
         beginLoad();
         httpClient.newCall(new Request.Builder().url(url).build()).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                if (reqSeq != uiApplySeq) {
+                    endLoad();
+                    return;
+                }
                 handleSearchFailure(cityName, getString(R.string.error_network_error));
             }
 
@@ -596,6 +624,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onData(JSONObject data) {
                         runOnUiThread(() -> {
                             endLoad();
+                            if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
                             if (data != null && data.has("cityName")) {
                                 currentCity = data.optString("cityName");
                             } else {
@@ -609,6 +638,10 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFail(String msg) {
+                        if (reqSeq != uiApplySeq) {
+                            endLoad();
+                            return;
+                        }
                         handleSearchFailure(cityName,
                                 msg == null || msg.isEmpty() ? getString(R.string.error_search_not_found) : msg);
                     }
@@ -627,6 +660,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void loadWeatherData(String city, boolean guardByGps) {
         if (city == null || city.trim().isEmpty()) return;
+        // guardByGps=true 的冷启动恢复是低优先级路径：不占用请求序号，仍由 isGpsResultApplied 兜底
+        final int reqSeq = guardByGps ? uiApplySeq : ++uiApplySeq;
         retryAction = () -> loadWeatherData(city, guardByGps);
         beginLoad();
         Request request = new Request.Builder()
@@ -640,6 +675,10 @@ public class MainActivity extends AppCompatActivity {
                     endLoad();
                     return;
                 }
+                if (!guardByGps && reqSeq != uiApplySeq) {
+                    endLoad();
+                    return;
+                }
                 fallbackToCache(city, getString(R.string.error_load_weather_failed));
             }
 
@@ -650,6 +689,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onData(JSONObject data) {
                         runOnUiThread(() -> {
                             endLoad();
+                            if (!guardByGps && reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
                             if (!guardByGps || !isGpsResultApplied) {
                                 applyAllPages(data);
                             }
@@ -659,6 +699,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFail(String msg) {
                         if (guardByGps && isGpsResultApplied) {
+                            endLoad();
+                            return;
+                        }
+                        if (!guardByGps && reqSeq != uiApplySeq) {
                             endLoad();
                             return;
                         }
@@ -672,6 +716,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadWeatherDataByLocation(double lat, double lon) {
         String lastCity = currentCity;   // GPS 结果尚未返回前，用当前城市做缓存兜底
+        final int reqSeq = ++uiApplySeq; // 新的定位结果成为最新请求，覆盖更早的搜索结果
         retryAction = () -> loadWeatherDataByLocation(lat, lon);
         beginLoad();
         Request request = new Request.Builder()
@@ -680,6 +725,10 @@ public class MainActivity extends AppCompatActivity {
         httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                if (reqSeq != uiApplySeq) {
+                    endLoad();
+                    return;
+                }
                 fallbackToCache(lastCity, getString(R.string.error_load_weather_failed));
             }
 
@@ -690,6 +739,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onData(JSONObject data) {
                         runOnUiThread(() -> {
                             endLoad();
+                            if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
                             isGpsResultApplied = true;
                             if (data != null && data.has("cityName")) {
                                 currentCity = data.optString("cityName");
@@ -701,6 +751,10 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFail(String msg) {
+                        if (reqSeq != uiApplySeq) {
+                            endLoad();
+                            return;
+                        }
                         fallbackToCache(lastCity,
                                 msg == null || msg.isEmpty() ? getString(R.string.error_get_weather_failed) : msg);
                     }
@@ -742,9 +796,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** 解析统一 JSON 契约：{success:true,data} / {success:false,message}，在调用线程内执行回调。 */
-    private void handleJson(Response response, JsonHandler handler) throws IOException {
+    private void handleJson(Response response, JsonHandler handler) {
         boolean successful = response.isSuccessful();
-        String body = response.body() == null ? "" : response.body().string();
+        int code = response.code();
+        String body;
+        try {
+            body = response.body() == null ? "" : response.body().string();
+        } catch (IOException e) {
+            // 读响应体途中连接中断（超时/断网）：必须走失败回调，否则加载条永远收不掉
+            handler.onFail(getString(R.string.error_network_error));
+            return;
+        }
         if (successful) {
             try {
                 JSONObject json = new JSONObject(body);
@@ -757,7 +819,7 @@ public class MainActivity extends AppCompatActivity {
                 handler.onFail(getString(R.string.error_parse_failed));
             }
         } else {
-            handler.onFail(getString(R.string.error_server, response.code()));
+            handler.onFail(getString(R.string.error_server, code));
         }
     }
 
@@ -843,10 +905,25 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        LocationListener locationListener = new LocationListener() {
+        // 重复调用时先清掉上一次的监听与超时任务，避免重复注册和回调泄漏
+        if (locationListener != null) {
+            locationManager.removeUpdates(locationListener);
+            locationListener = null;
+        }
+        if (locationTimeoutRunnable != null) {
+            mainHandler.removeCallbacks(locationTimeoutRunnable);
+            locationTimeoutRunnable = null;
+        }
+
+        locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
                 locationManager.removeUpdates(this);
+                // 已拿到定位，取消 10 秒超时任务，否则它会晚一步误报「定位不可用」
+                if (locationTimeoutRunnable != null) {
+                    mainHandler.removeCallbacks(locationTimeoutRunnable);
+                    locationTimeoutRunnable = null;
+                }
                 saveLocationToServer(location.getLatitude(), location.getLongitude());
                 loadWeatherDataByLocation(location.getLatitude(), location.getLongitude());
             }
@@ -871,7 +948,8 @@ public class MainActivity extends AppCompatActivity {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener, Looper.getMainLooper());
         }
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        locationTimeoutRunnable = () -> {
+            locationTimeoutRunnable = null;
             if (locationManager != null) {
                 locationManager.removeUpdates(locationListener);
             }
@@ -883,7 +961,8 @@ public class MainActivity extends AppCompatActivity {
                     showCityFallbackIfPending();
                 });
             }
-        }, 10000);
+        };
+        mainHandler.postDelayed(locationTimeoutRunnable, 10000);
     }
 
     private void saveSearchedCityToServer(String cityName) {
