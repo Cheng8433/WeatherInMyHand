@@ -42,12 +42,6 @@ public class WeatherController {
         return wrap(result);
     }
 
-    /** /api/weather/air?city=北京（带缓存与降级，契约同上） */
-    @GetMapping("/air")
-    public Map<String, Object> getAirQuality(@RequestParam String city) throws IOException {
-        return wrap(weatherService.getAirQualityCached(city));
-    }
-
     /** 组装统一成功契约；仅在降级（stale）时附加标记字段，不影响 Android 对 data 的读取 */
     private Map<String, Object> wrap(WeatherService.WeatherResult result) {
         Map<String, Object> map = new HashMap<>();

@@ -6,5 +6,4 @@ import java.util.Optional;
 
 public interface WeatherRepository extends JpaRepository<Weather, Long> {
     Optional<Weather> findTopByCityNameOrderByUpdateTimeDesc(String cityName);
-    Optional<Weather> findTopByOrderByUpdateTimeDesc();
 }

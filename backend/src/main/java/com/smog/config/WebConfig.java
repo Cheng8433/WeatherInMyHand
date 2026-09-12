@@ -7,8 +7,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web 层配置：给会触发和风上游请求的接口（/api/weather/** 与 /api/location/**）挂上限流拦截器。
- * 两者都会打到和风（weather/air/逆地理编码），纳入同一把窗口与额度即可。
+ * Web 层配置：给会触发和风上游请求的接口（/api/weather/**）挂上限流拦截器。
+ * 该路径下的 /info 会打到和风（地理编码/实时/空气/逐小时），纳入同一把窗口与额度即可。
  * 窗口固定为 1 分钟；额度经 application.properties 的 rate.limit.* 可调。
  */
 @Configuration
@@ -31,6 +31,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new RateLimitInterceptor(perIpPerMinute, globalPerMinute, WINDOW_MILLIS, objectMapper))
-                .addPathPatterns("/api/weather/**", "/api/location/**");
+                .addPathPatterns("/api/weather/**");
     }
 }

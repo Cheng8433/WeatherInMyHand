@@ -92,8 +92,8 @@ public class LocationService {
 
     /**
      * 从 API 获取城市位置并保存到数据库。
-     * 同一城市仅保留最新一条（存在则更新），与 {@link #saveLocationByLatLon} 一致——
-     * 否则每搜一次城市就 INSERT 一行，表会随使用无限增长、同一城市堆出重复行。
+     * 同一城市仅保留最新一条（存在则更新），否则每搜一次城市就 INSERT 一行，
+     * 表会随使用无限增长、同一城市堆出重复行。
      * @param cityName 城市名称
      * @return 保存后的 Location 实体
      * @throws IOException 如果获取或保存失败
@@ -167,15 +167,6 @@ public class LocationService {
             location.setUpdateTime(System.currentTimeMillis());
             return location;
         }
-    }
-
-    /**
-     * 根据经纬度保存位置（逆地理编码出城市名后入库）。
-     * 同一城市仅保留最新一条（存在则更新），避免每次上报都新增行导致表无限增长。
-     * 落库坐标为城市中心（见 {@link #reverseGeocode}），非调用方原始定位。
-     */
-    public Location saveLocationByLatLon(double lat, double lon) throws IOException {
-        return upsertByCityName(reverseGeocode(lat, lon));
     }
 
     /**
