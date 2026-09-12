@@ -11,9 +11,12 @@
 cd backend
 mvn spring-boot:run          # dev server on :8080
 mvn clean package            # produce fat jar
+mvn test                     # unit tests (rate-limit security rules + upstream-JSON tolerance)
 ```
 
-No tests exist in this repo.
+Tests **do** exist (added 2026-09-12) — this line used to say the opposite:
+`backend` → `mvn test` (JUnit 5 + AssertJ via `spring-boot-starter-test`, test scope, not in the fat jar);
+`android` → `./gradlew :app:testDebugUnitTest` (plain JUnit 4 JVM tests, no emulator). A `mvn test` / `gradlew test` is the safety net for the invariants below, which are otherwise only visible by reading the code.
 
 - Production runs the fat jar under systemd (`smog.service`); it binds **`127.0.0.1:8080`** via `Environment=SERVER_ADDRESS=127.0.0.1` (public plaintext 8080 is closed) and is fronted by nginx **443 TLS** (ZeroSSL IP cert) on the Aliyun ECS. Deploy files live on the server, not in this repo — see `HTTPS-DEPLOY.md`.
 - H2 is **file-backed** (`jdbc:h2:file:./data/smogdb`, `ddl-auto=update`) — data survives restarts. DB files land in `backend/data/` (gitignored).
@@ -56,8 +59,15 @@ JWT config (hardcoded in `JwtUtil.java`):
 ## Android dev notes
 
 - UI is a **single Activity** (`MainActivity`) + bottom `BottomNavigationView` with **3 tabs** (今天/空气质量/趋势). The three pages are `<include>` ScrollViews (`page_today`/`page_air`/`page_trend`) toggled by visibility — no Fragments. `WeatherDetailActivity` was **deleted**; its content moved into the tabs.
-- Data flow: after the city is resolved (GPS via `LocationManager`, or search), call `/api/weather/info?city=` **once**, cache the whole `data` JSONObject in `lastWeatherData`, then render all three pages from it (`renderToday`/`renderAir`/`renderTrend`).
-- In-flight-request guards (easy to break when adding new calls): `uiApplySeq` makes the **last-issued** request win — search / GPS / refresh all bump it, and a stale callback must still call `endLoad()` before returning or the loading bar sticks. `handleJson` reports read errors via `onFail` (never swallows them). `onDestroy` unregisters the location listener, drops the 10s timeout runnable and calls `httpClient.dispatcher().cancelAll()`.
+- **`MainActivity` was split on 2026-09-12** (1049 → 506 lines). Everything below is a plain class in `com.smog.weatherapp` — no architecture framework, no DI, constructed from the Activity **after** `setContentView` and doing their own `findViewById`. The Activity keeps only what genuinely needs it: view wiring + tab switching, the `uiApplySeq` arbitration, the three per-call-site fallback policies, the privacy gate, and the cache-warm paint. Where to look:
+  - `net/WeatherApi` — OkHttp + the `{success,data}` / `{success,message}` contract (with sibling `stale` for degraded data). Its callback splits **`onTransportError()`** (never reached the server) from **`onFail(message)`** (answered, but unusable) on purpose: call sites word those two differently (search says "网络错误", refresh/GPS says "加载天气失败"). It deliberately knows nothing about `uiApplySeq`, the loading bar, or which cache fallback applies — those are UI semantics.
+  - `net/NetworkStatus.isOnline(ctx)` — the connectivity check (renamed from `isNetworkAvailable` because the request path *and* the location path both need it, so it belongs to neither).
+  - `LoadOverlay` — counting loading bar + error/retry panel. "Which request does Retry re-send" is injected per call site via `setRetryAction(...)`; the class only runs it.
+  - `LocationHelper` — permission → listener (GPS, falling back to network) → 10s timeout. It carries the two fragile orderings: a repeat call clears the previous registration first, and a fix cancels the pending timeout (otherwise the timeout fires a moment later and falsely reports "定位不可用"). `onDestroy` just calls `stop()`. `onRequestPermissionsResult` stays on the Activity (framework callback) and forwards to `onPermissionResult`. Failure exits are three separate callbacks (`onLocation` / `onLocationAborted` / `onLocationTimeout`) rather than one boolean flag, because "only complain when there is no city yet" needs the Activity's state.
+  - `PageRenderer` — JSON field → view mapping (the three pages + the data-time footer; owns its own `findViewById`s, with `weatherScene` passed in because tab switching also uses it). `UiFormat` — value → display text (`setDouble` / `setPoll` / `percentStr`, all static and pure). Split because they change for different reasons (decimal places vs. field mapping).
+  - Views are intentionally **not** null-checked: the ids are aapt-verified, and `LoadOverlay`'s constructor already dereferences its buttons unconditionally, so a partial set of `!= null` guards would only hide a real "the loading bar never appears" bug.
+- Data flow: after the city is resolved (GPS via `LocationManager`, or search), call `/api/weather/info?city=` **once**, cache the whole `data` JSONObject in `lastData`, then render all three pages from it (`PageRenderer.renderToday`/`renderAir`/`renderTrend`).
+- In-flight-request guards (easy to break when adding new calls): `uiApplySeq` makes the **last-issued** request win — search / GPS / refresh all bump it, and a stale callback must still call `overlay.endLoad()` before returning or the loading bar sticks. `WeatherApi.handleJson` reports read errors via `onFail` (never swallows them). `onDestroy` calls `location.stop()` (unregisters the listener + drops the 10s timeout runnable) and `weatherApi.cancelAll()`.
 - Cold start resolves the city from **local state only**: the per-device snapshot (`WeatherCache` → previous city + data) followed by a fresh GPS fix. The client does **not** call any "my location" endpoint (there is none — see the API notes above); before 2026-09-12 it used `GET /api/location/local`, which returned the single most-recently-saved row **globally**, so on a fresh install with no local cache and no GPS it showed whatever city the *last* user had looked up. With no cache and no fix the header stays at `header_city_unavailable` ("未获取到位置"), matching the "只信实时定位" policy.
 - The GPS fix is **never uploaded**: `onLocationChanged` goes straight to `loadWeatherDataByLocation(lat, lon)` (which calls `/api/weather/info?lat=…&lon=…` and gets the city name back in the response). The server's city cache still fills, because the weather pipeline calls `getOrFetchLocation(cityName)` on its way through. Don't re-add a coordinates POST — see the coordinates note above.
 - 4 user-selectable themes (天蓝·晴 / Night / Forest / Sunset), chosen via a palette button in the header → `AlertDialog`; applied through `ThemeHelper` (`SharedPreferences` → `setTheme` before `setContentView` → `recreate()`). All colors come from custom attrs (`?attr/pageBackground|cardBackground|textPrimary|...`), never hardcoded hex.
@@ -76,7 +86,7 @@ JWT config (hardcoded in `JwtUtil.java`):
 
 ## What's missing / known gaps
 
-- No tests; no global HTTP-error statuses (intentional, see contract note above).
+- No global HTTP-error statuses (intentional, see contract note above). Tests exist but are **thin and unit-level only** — no instrumentation/UI tests, so the Activity and the new `LocationHelper`/`LoadOverlay`/`PageRenderer` wiring is still only verified by compiling and smoke-testing on a device.
 - `weather_data`/`locations` are upserted by city (each city keeps one latest row), so size is bounded by distinct cities — old duplicates from before the upsert change remain but can be wiped safely.
 - **The upsert is not concurrency-safe**: `getWeatherByCity`/`getAirQualityByLatLon` are `@Transactional` (rollback + one persistence context), but the read-then-save still races at H2's default READ_COMMITTED, so two simultaneous first-time requests for the same city can both INSERT. The real fix is a **unique index on `city_name`**, deliberately deferred — existing duplicate rows would make it fail at startup. Clean the duplicates first, then add the index.
 - 24h hourly forecast is `@Transient` — never persisted, so "history" beyond the current snapshot doesn't exist server-side.
