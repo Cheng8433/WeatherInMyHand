@@ -12,11 +12,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.concurrent.TimeUnit;
 
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -52,7 +51,16 @@ public final class WeatherApi {
     }
 
     private final Resources res;
-    private final OkHttpClient httpClient = new OkHttpClient();
+
+    /**
+     * 读超时必须大于后端一次综合请求的最坏耗时：/info 在缓存未命中时要串行打 4 次和风
+     * （地理编码 → 实时 → 空气 → 逐小时），每次上游 connect 5s + read 15s，最坏可达数十秒。
+     * OkHttp 默认 read 10s 会在后端仍在取数时先断开，界面误报「网络错误」，而后端其实
+     * 可能已经成功——用户看到的是假故障，这次刷新也白费。
+     */
+    private final OkHttpClient httpClient = new OkHttpClient.Builder()
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build();
 
     /** @param context 任意 Context，只取其 {@link Resources} 用于把错误翻成文案，不持有它 */
     public WeatherApi(Context context) {
@@ -67,39 +75,6 @@ public final class WeatherApi {
     /** 按经纬度取综合天气；后端会逆地理编码，响应体里带回 cityName。 */
     public void fetchByLatLon(double lat, double lon, ResultCallback callback) {
         enqueue("weather/info?lat=" + lat + "&lon=" + lon, callback);
-    }
-
-    /**
-     * 把搜索到的城市名上报后端，给服务端的城市缓存补一条。
-     * 只报城市名——坐标由后端按城市名自填城市中心（位置属敏感个人信息，见 AGENTS.md）。
-     * 失败静默：这只影响服务端缓存，与用户看到的任何内容无关。
-     */
-    public void saveCity(String cityName) {
-        JSONObject json = new JSONObject();
-        try {
-            // latitude/longitude 置 0 是接口约定的「走城市名分支」标记
-            // （后端 LocationController.saveLocation 先判 lat/lon 是否为 0，再落到 cityName 分支）
-            json.put("cityName", cityName);
-            json.put("latitude", 0);
-            json.put("longitude", 0);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
-        Request request = new Request.Builder()
-                .url(BuildConfig.BACK_HOST_API + "location/save")
-                .post(body)
-                .build();
-        httpClient.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                response.close();
-            }
-        });
     }
 
     /** 界面销毁时取消所有在途请求，避免回调继续持有已销毁的 Activity。 */

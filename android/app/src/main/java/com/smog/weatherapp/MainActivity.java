@@ -382,7 +382,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     tvCityName.setText(currentCity);
                     applyAllPages(data, stale);
-                    weatherApi.saveCity(currentCity);
                 });
             }
 

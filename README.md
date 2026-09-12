@@ -7,7 +7,7 @@ WeatherInMyHand/
 ├── backend/                 # Spring Boot 后端（和风天气 v1，Ed25519 JWT）
 │   ├── src/main/java/com/smog/
 │   │   ├── SmogApplication.java
-│   │   ├── controller/    # LocationController / WeatherController
+│   │   ├── controller/    # WeatherController（唯一端点 /api/weather/info）
 │   │   ├── entity/        # Location / Weather
 │   │   ├── repository/    # JPA 数据仓库
 │   │   ├── service/       # 业务逻辑（天气/定位）
@@ -38,7 +38,7 @@ WeatherInMyHand/
 │   │       ├── mipmap-*/  # 桌面图标（自适应 + 各密度 PNG）
 │   │       ├── xml/       # network_security_config（system + 内置 Sectigo R46 根）
 │   │       ├── raw/       # sectigo_r46.pem（公开根证书，随源码分发）
-│   │       └── values/    # theme(4 套主题)/colors/attrs/strings/arrays
+│   │       └── values/    # theme(5 套主题)/colors/attrs/strings/arrays
 │   ├── app/src/test/java/com/smog/weatherapp/   # 本地 JVM 单测（WeatherFormatTest / UiFormatTest）
 │   └── build.gradle
 └── README.md
@@ -58,8 +58,8 @@ WeatherInMyHand/
 
 - 已切 **HTTPS**：云端 nginx 装 ZeroSSL **IP 证书**（纯公网 IP、无域名），443 TLS 反代到后端 `127.0.0.1:8080`，80 全跳 301；后端收拢为只绑回环、**公网明文 8080 已关闭**。详见 `HTTPS-DEPLOY.md`。
 - Android 端 `BACK_HOST_API=https://118.178.147.156/api/`，Manifest **关闭明文**（`usesCleartextTraffic=false`），并内置 **Sectigo R46 公共根**（`res/raw/sectigo_r46.pem`），以兼容系统信任库较旧、缺 R46 新根的设备。
-- 隐私合规：首启不可关闭的同意门（`PrivacyStore`）、关于与隐私政策页（`PrivacyActivity`）。当前版本 **1.0.4（versionCode 5）**。
-- 质量加固（1.0.3，2026-09-10）：安卓修掉定位监听/超时回调泄漏（`onDestroy` 注销 + 取消在途请求）、响应体读取异常导致加载条卡死、并发请求旧城市覆盖新城市（请求序号）；后端 `/air` 失败降级与数字字段解析容错，写路径补事务。
+- 隐私合规：首启不可关闭的同意门（`PrivacyStore`）、关于与隐私政策页（`PrivacyActivity`）。当前版本 **1.0.5（versionCode 6）**。
+- 质量加固（1.0.3，2026-09-10）：安卓修掉定位监听/超时回调泄漏（`onDestroy` 注销 + 取消在途请求）、响应体读取异常导致加载条卡死、并发请求旧城市覆盖新城市（请求序号）；后端 `/air` 失败降级与数字字段解析容错，写路径补事务（该端点已于 1.0.5 删除，见下）。
 - 数据可信度（1.0.4，2026-09-11）：客户端开始读取后端 `stale` 降级标记，今天页页脚显示「数据更新：MM-dd HH:mm」，降级或读本地缓存时明示「离线缓存 · 更新于 …」；`WeatherCache` 加容量上限（最多 10 城，按写入时间淘汰）与 24 小时有效期；网络判断改用 `getActiveNetwork` + `NetworkCapabilities`（原废弃 `getActiveNetworkInfo` 会把有网误判为无网络）；后端 `/api/location/local` 改用 HashMap 组装，避免可空经纬度触发 `Map.of` 的 NPE（该接口已于 2026-09-12 整体删除，见下）。
 - 发版瘦身与稳健性（1.0.4，2026-09-11）：Android release 打开 **R8**（`minifyEnabled` + `shrinkResources`，规则见 `app/proguard-rules.pro`），release 包从 **8.1 MB 降到 2.8 MB**（未压缩 debug 包 8.1 MB 作参照；其中单是把 AnyChart 的整库 `-keep` 收窄到「只保 JS 桥」就省下 1.1 MB）。`gradle.properties` 补 `org.gradle.jvmargs=-Xmx2048m`，否则 R8 会因默认 512m 堆 GC 抖动中断构建。后端 `WeatherService` 的天气/空气缓存放进 `ResultCache`（上限 200 条 + 按时间淘汰 + 同城单飞，避免并发下同一城市重复打和风），日志改用 `logback-spring.xml` 按天/按 10MB 滚动（保留 14 天、总量 200MB），兜底异常不再把 `e.getMessage()` 透给客户端（Hibernate/SQL 消息会带出表名与 SQL 片段，只进日志）；`WeatherFormat` 里残留的中文（AQI 等级/评估/健康建议、风向、污染物名）全部外置到 `arrays.xml` / `strings.xml`。
 - 死代码与一致性清理（1.0.4，2026-09-12）：删除零调用的 `WeatherService.saveLocation`、`WeatherFormat.pollutantUnit`，以及 `MainActivity` 中从未被置为 `true` 的 `hasPerformedInitialLocation` 字段与其不可达守卫；后端包名拼写 `com.smog.midwdget` 修正为 `com.smog.midwidget`（同步两处 `import` 与本文结构树）；`MainActivity.attrColor` 补上 `resolveAttribute` 的返回值判断，主题属性缺失时回退默认色，不再返回全透明 `0`；`getWeatherAndAirQuality` 包装定位失败异常改用 `new IOException(e.getMessage(), e)`——原先 `new IOException(e)` 会让 `getMessage()` 变成 `java.lang.RuntimeException: …`，把内部类名带进客户端错误响应。
@@ -67,6 +67,7 @@ WeatherInMyHand/
 - 冷启动不再串城（1.0.4，2026-09-12）：客户端原先冷启动会调 `GET /api/location/local` 恢复「上次城市」，但该接口返回的是服务器 DB 里**全局最新**的一条 Location（按 `updateTime`，不区分设备）——新装 App、无本地缓存城市、又拿不到 GPS 的用户会看到「服务器上最近有人查过的那个城市」，多人共用时等于串城且泄露他人位置。现移除该调用：冷启动只信**本机** `WeatherCache` 快照（每台设备各自的上一座城市），拿不到就提示「未获取到位置」，与既有「只信实时定位」口径一致。随之下线已无用的 `guardByGps` 低优先级分支与 `isGpsResultApplied` 字段（请求先后一律由 `uiApplySeq`「最后发起者胜」裁定）。
 - 架构拆分（2026-09-12）：`MainActivity` 由 **1049 行降到 506 行**，把四块横切关注点整块抽出成平铺的普通类（不引入任何架构框架），全部为零行为变化的机械搬运——`net/WeatherApi`（OkHttp + 统一 JSON 契约解析，回调刻意区分"请求没送达"与"送到了但不可用"，因为调用方对这两种情况的话术本就不同）、`net/NetworkStatus`（联网判断，请求前与定位前共用同一口径）、`LoadOverlay`（细加载条 + 错误重试浮层；"重试要重发哪个请求"仍由 Activity 每次注入）、`LocationHelper`（权限/监听/10 秒超时，含"重复调用先清理旧注册""拿到 fix 顺手取消超时任务"两处易错时序，`onDestroy` 的注销链收成 `stop()`）、`PageRenderer` + `UiFormat`（前者管"哪个字段填哪个控件"、后者管"同一个值怎么显示"，拆开是因为二者变化的原因不同）。留在 Activity 的只剩它才懂的事：请求序号 `uiApplySeq`"最后发起者胜"的裁定、搜索/刷新/GPS 三条路径各自的兜底语义、隐私同意门、本地缓存秒开。测试补 `UiFormatTest`（安卓单测增至 13 例）。
 - 位置数据最小化（1.0.4，2026-09-12）：把「位置不上服务器」这件事做彻底，分两侧。(1) 服务端删掉 `GET /api/location/local` 全套访问路径（`LocationController.getLatestLocation`、`LocationService.getCurrentLocation`、`LocationRepository.findTopByOrderByUpdateTimeDesc`）以及零调用的 `WeatherService.getCurrentLocation`、随之无用的 `locationRepository` 字段与 `LocationService.getLocationFromDB`——它没有主人标识，"最新一条"只可能是全局语义，留不下任何合理的将来用法；(2) 坐标不再落库：`saveLocationByLatLon`/`reverseGeocode` 原先把**调用方上传的原始经纬度**存进 `locations`，现改为一律存**逆地理编码出的城市中心坐标**，且该约束放在服务端强制——位置属敏感个人信息，天气只需城市级粒度，不该让某个客户端版本决定要不要写精确坐标；客户端同时移除 `saveLocationToServer` 调用与方法（其唯一消费者 `/local` 已删，城市缓存由后端 `getOrFetchLocation` 按需自填），GPS fix 现在只用于当次天气查询、不上传也不留存；(3) 顺带修掉写路径不一致：`saveLocationFromApi` 原先是裸 `save()`，每搜一次城市就 INSERT 一行（表随使用增长、同城堆重复行，也是 AGENTS.md 里"唯一索引暂缓"的成因），现与经纬度路径共用同一个 `upsertByCityName`，按 API 返回的标准城市名去重，同一城市库里始终只有一行。
+- 精简与超时对齐（1.0.5，2026-09-12）：(1) **客户端读超时 10 秒提到 30 秒**——OkHttp 默认 10 秒短于后端一次综合请求的最坏预算（缓存未命中时串行打 4 次和风：地理编码→实时→空气→逐小时，每次上游 connect 5s + read 15s），后端还在取数客户端就先断开，界面误报「网络错误」而服务端其实可能已经成功，这次刷新等于白费；(2) **删掉两处死链路**：`GET /api/weather/air` 客户端从不调用、且综合路径不经过它的缓存（`airCache` 在生产环境恒空），`POST /api/location/save` 对 App 自身完全冗余（城市缓存由后端 `getOrFetchLocation` 按需自填，这次 POST 只是每次搜索白花一次请求与一个限流额度）——随之删除 `LocationController` 整个类、`LocationService.saveLocationByLatLon`（唯一调用者就是它）与「按经纬度写库」分支，服务端至此**没有任何写位置的入口**，限流路径也收拢为只覆盖 `/api/weather/**`；(3) **删 `getCityNameFromLastWeather` 及其空白城市兜底分支**——它取「全库最新一条」天气记录的城市名，正是已删的 `/api/location/local` 的全局语义，且实际不可达（`/info` 与 `/air` 都必传城市名）；`getAirQualityByLatLon` 改为城市名为空时显式报错，并清理随之无用的 `WeatherRepository.findTopByOrderByUpdateTimeDesc`；(4) **修 `staleOrRethrow` 的消息外泄**：非 IOException 原先被包成 `new IOException(cause.getMessage(), cause)`，而 `GlobalExceptionHandler` 会把 IOException 的 message 原样返回给客户端，等于让 JPA/SQL 的表名与 SQL 片段绕过「细节只进日志」的闸门，现改为固定文案对外、原始异常只挂因果链供日志追溯；(5) **重写 `API-DOC.md`**：它此前仍在描述已删的 `/api/location/local` 与「无记录返回 404」这个已不存在的例外、称客户端每次定位都会上报坐标（与隐私修复正好相反）、把 `/air` 的天气字段写成恒为 null（实际会复用该城已有行），并补上 `stale` 降级标记与限流两处契约说明；同时订正文档里「4 套主题」的笔误（实为 5 套）。
 
 ## 运行方法
 
