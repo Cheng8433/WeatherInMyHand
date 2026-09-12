@@ -1,116 +1,61 @@
-package com.smog.entity;
+package com.smog.dto;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-@Entity
-@Table(name = "weather_data")
+/**
+ * {@code GET /api/weather/info} 的响应模型，由 Controller 直接序列化成响应里的 {@code data}。
+ *
+ * <p>它**不落库**：2026-09-12 起服务端不再持久化天气数据（详见 AGENTS.md 的取舍说明）。
+ * 因此这里既没有 JPA 注解，也没有自增主键；唯一与时间相关的 {@code updateTime} 由服务端
+ * 取数时显式赋值（客户端用它显示「数据更新」并判定本地缓存是否过期）。
+ */
 public class Weather {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     // ================== 基础信息 ==================
-    @Column(nullable = false)
     private String cityName;          // 城市名称
-
-    @Column
     private Long updateTime;          // 数据更新时间戳（毫秒）
 
     // ================== 实时天气 (now) ==================
-    @Column
     private String weather;           // 天气状况（如“多云”）
-
-    @Column
     private Double temperature;       // 温度（℃）
-
-    @Column
     private Double feelsLike;         // 体感温度（℃）
-
-    @Column
     private Double humidity;          // 相对湿度（%）
-
-    @Column
     private String windDir;           // 风向（如“东南风”）
-
-    @Column
     private String windScale;         // 风力等级（如“1”）
-
-    @Column
     private Double windSpeed;         // 风速（km/h）
-
-    @Column
     private Double precip;            // 降水量（mm）
-
-    @Column
     private Double pressure;          // 大气压力（hPa）
-
-    @Column
     private Double vis;               // 能见度（km）
-
-    @Column
     private String cloud;             // 云量（%）
-
-    @Column
     private Double dew;               // 露点温度（℃）
 
     // ================== 空气质量 - 指数 ==================
-    @Column
     private Integer aqi;              // 兼容旧字段，将映射为 us-epa 的 aqi
-
-    @Column
     private Integer aqiUs;            // 美国标准 AQI (us-epa)
-
-    @Column
-    private Integer aqiCN;           //中国标准AQI
-
-    @Column
+    private Integer aqiCN;            //中国标准AQI
     private BigDecimal aqiQa;         // QAQI 指数（和风自研，小数）
-
-    @Column
     private String airQuality;        // 空气质量类别（如“Good”）
-
-    @Column
     private String primaryPollutant;  // 首要污染物代码（如“pm2p5”）
 
     // ================== 污染物浓度 ==================
-    @Column
     private String pm25;              // PM2.5 浓度（μg/m³），保留字符串兼容
-
-    @Column
     private String pm10;              // PM10 浓度（μg/m³）
-
-    @Column
     private Double pm25Value;         // PM2.5 数值（便于计算）
-
-    @Column
     private Double pm10Value;         // PM10 数值
-
-    @Column
     private Double no2;               // 二氧化氮浓度（ppb）
-
-    @Column
     private Double o3;                // 臭氧浓度（ppb）
-
-    @Column
     private Double co;                // 一氧化碳浓度（ppm）
-
-    @Column
     private Double so2;               // 二氧化硫浓度（ppb，若接口返回）
 
-    // ================== 逐小时预报（不入库） ==================
-    @Transient
+    // ================== 逐小时预报 ==================
     private List<Map<String, Object>> hourlyForecast;
 
     // ================== 构造器、Getter 和 Setter ==================
     public Weather() {}
 
     // ----- 基础信息 -----
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getCityName() { return cityName; }
     public void setCityName(String cityName) { this.cityName = cityName; }
     public Long getUpdateTime() { return updateTime; }

@@ -4,9 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.smog.dto.Weather;
 import com.smog.entity.Location;
-import com.smog.entity.Weather;
-import com.smog.repository.WeatherRepository;
 import com.smog.midwidget.JwtUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 public class WeatherService {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
-
-    @Autowired
-    private WeatherRepository weatherRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -167,8 +162,6 @@ public class WeatherService {
 
     // ==================== 实时天气 API ====================
 
-    // 事务覆盖“查最近一条 → 更新或新建 → save”的读改写，避免半途异常留下不一致行
-    @Transactional
     public Weather getWeatherByCity(double latitude, double longitude, String cityName) throws IOException {
         log.info("获取实时天气");
         String token = jwtUtil.generateToken();
@@ -197,10 +190,10 @@ public class WeatherService {
             // v1 实时天气响应无顶层 code/now 字段，数据即响应本体，成功与否只看 HTTP 状态
             JsonObject json = rootElement.getAsJsonObject();
 
-            // 复用该城市最近一条记录做“更新”（upsert），避免每次请求都 INSERT 新行导致表无限增长。
-            // 没有任何接口读历史行，始终只需保留每个城市的最新快照。
-            Weather weather = weatherRepository.findTopByCityNameOrderByUpdateTimeDesc(cityName)
-                    .orElseGet(Weather::new);
+            // 只是本次请求的内存载体，不落库（2026-09-12 起服务端不再持久化天气数据）。
+            // 上游本次没返回的字段就保持 null，不再从旧行沿用上一次的值——那样会让旧值
+            // 冒充本次数据而不被标记，客户端按“字段可能为 null、逐字段独立降级”处理即可。
+            Weather weather = new Weather();
             weather.setCityName(cityName);
             weather.setUpdateTime(System.currentTimeMillis());
 
@@ -274,7 +267,7 @@ public class WeatherService {
                 if (dew != null) weather.setDew(dew);
             }
 
-            return weatherRepository.save(weather);
+            return weather;
         } catch (Exception e) {
             log.error("获取实时天气异常", e);
             throw e;
@@ -290,7 +283,6 @@ public class WeatherService {
      * 若为空则显式失败，而**不**回退成"最近一次查询过的城市"——那种全局语义正是已删除的
      * {@code /api/location/local} 的问题所在（没有主人标识，"最新一条"只可能是别人的）。
      */
-    @Transactional
     public Weather getAirQualityByLatLon(double latitude, double longitude, String cityName) throws IOException {
         if (cityName == null || cityName.trim().isEmpty()) {
             throw new IOException("缺少城市名，无法获取空气质量");
@@ -326,8 +318,8 @@ public class WeatherService {
                 }
             }
 
-            Weather weather = weatherRepository.findTopByCityNameOrderByUpdateTimeDesc(cityName)
-                    .orElse(new Weather());
+            // 同 getWeatherByCity：只承载本次的空气质量，不落库也不能靠旧行补字段。
+            Weather weather = new Weather();
             weather.setCityName(cityName);
             weather.setUpdateTime(System.currentTimeMillis());
 
@@ -414,7 +406,7 @@ public class WeatherService {
                 log.warn("空气质量响应中没有 'pollutants' 字段");
             }
 
-            return weatherRepository.save(weather);
+            return weather;
         } catch (Exception e) {
             log.error("获取空气质量异常", e);
             throw e;
@@ -451,12 +443,13 @@ public class WeatherService {
             log.warn("获取逐小时预报失败: {}", e.getMessage());
         }
 
-        return weatherRepository.save(weather);
+        return weather;
     }
 
     private void mergeAirQuality(Weather target, Weather source) {
         if (source.getAqi() != null) target.setAqi(source.getAqi());
         if (source.getAqiUs() != null) target.setAqiUs(source.getAqiUs());
+        if (source.getAqiCN() != null) target.setAqiCN(source.getAqiCN());
         if (source.getAqiQa() != null) target.setAqiQa(source.getAqiQa());
         if (source.getAirQuality() != null) target.setAirQuality(source.getAirQuality());
         if (source.getPrimaryPollutant() != null) target.setPrimaryPollutant(source.getPrimaryPollutant());
