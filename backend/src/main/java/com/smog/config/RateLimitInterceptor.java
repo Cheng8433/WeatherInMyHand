@@ -55,15 +55,19 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         return false;
     }
 
+    /**
+     * 限流 key 用的客户端 IP：直接取 {@code getRemoteAddr()}。
+     *
+     * <p>它已由 Tomcat 的 RemoteIpValve 解析好（见 application.properties 的
+     * {@code server.tomcat.remoteip.*}）：valve 只在 TCP 直连方是可信代理时才采信
+     * X-Forwarded-For，并从右往左跳过可信代理段取第一个非代理地址，最终写回 remoteAddr。
+     *
+     * <p>所以这里【绝不能再自己读 X-Forwarded-For 的首段】：nginx 的
+     * {@code $proxy_add_x_forwarded_for} 是「追加」，客户端自带的段会留在最左边，
+     * 读首段等于让攻击者每请求换一个假 IP 就能把按 IP 的限流完全绕开（只剩全局额度兜底），
+     * 还能反过来伪造任意 IP 去精准封掉别人。另外 server.address=127.0.0.1 让公网无法直连 8080。
+     */
     private String clientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.trim().isEmpty()) {
-            int comma = xff.indexOf(',');
-            String first = (comma >= 0 ? xff.substring(0, comma) : xff).trim();
-            if (!first.isEmpty()) {
-                return first;
-            }
-        }
         return request.getRemoteAddr();
     }
 

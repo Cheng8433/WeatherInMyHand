@@ -99,9 +99,6 @@ public class MainActivity extends AppCompatActivity {
     private LocationListener locationListener;
     private String currentCity = "";
 
-    private boolean hasPerformedInitialLocation = false;
-    private boolean isGpsResultApplied = false;
-
     /** 主线程 Handler 与定位超时任务：保存引用以便 onDestroy 移除未执行的延时回调 */
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Runnable locationTimeoutRunnable;
@@ -158,13 +155,12 @@ public class MainActivity extends AppCompatActivity {
         httpClient.dispatcher().cancelAll();
     }
 
-    /** 通过隐私同意后才执行的天气主流程（缓存秒开 + 恢复上次城市 + GPS 定位）。 */
+    /** 通过隐私同意后才执行的天气主流程（本地缓存秒开 + GPS 定位）。 */
     private void startWeatherFlow() {
         weatherStarted = true;
         showTab(TAB_TODAY);
         bottomNav.setSelectedItemId(R.id.nav_today);
         paintLastCachedWeather();              // 启动先用本地缓存秒开（断网也有内容），联网后刷新覆盖
-        loadCurrentLocationFromServer();       // 先显示上次查看的城市，零等待
         checkLocationPermission();             // 后台同时进行 GPS 定位
     }
 
@@ -677,18 +673,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadWeatherData(String city) {
-        loadWeatherData(city, false);
-    }
-
-    /**
-     * @param guardByGps 为 true 时仅当 GPS 定位结果尚未落地才应用（供“显示上次城市”的冷启动路径使用，
-     *                   避免旧的服务器城市快照覆盖更新的 GPS 结果）；手动搜索/刷新传 false 始终应用。
-     */
-    private void loadWeatherData(String city, boolean guardByGps) {
         if (city == null || city.trim().isEmpty()) return;
-        // guardByGps=true 的冷启动恢复是低优先级路径：不占用请求序号，仍由 isGpsResultApplied 兜底
-        final int reqSeq = guardByGps ? uiApplySeq : ++uiApplySeq;
-        retryAction = () -> loadWeatherData(city, guardByGps);
+        final int reqSeq = ++uiApplySeq;
+        retryAction = () -> loadWeatherData(city);
         beginLoad();
         Request request = new Request.Builder()
                 .url(BASE_URL + "weather/info?city=" + urlEncode(city))
@@ -696,12 +683,7 @@ public class MainActivity extends AppCompatActivity {
         httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                // 冷启动恢复路径若已有更新的 GPS 结果落地，就别用旧缓存覆盖它
-                if (guardByGps && isGpsResultApplied) {
-                    endLoad();
-                    return;
-                }
-                if (!guardByGps && reqSeq != uiApplySeq) {
+                if (reqSeq != uiApplySeq) {
                     endLoad();
                     return;
                 }
@@ -715,20 +697,14 @@ public class MainActivity extends AppCompatActivity {
                     public void onData(JSONObject data, boolean stale) {
                         runOnUiThread(() -> {
                             endLoad();
-                            if (!guardByGps && reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
-                            if (!guardByGps || !isGpsResultApplied) {
-                                applyAllPages(data, stale);
-                            }
+                            if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
+                            applyAllPages(data, stale);
                         });
                     }
 
                     @Override
                     public void onFail(String msg) {
-                        if (guardByGps && isGpsResultApplied) {
-                            endLoad();
-                            return;
-                        }
-                        if (!guardByGps && reqSeq != uiApplySeq) {
+                        if (reqSeq != uiApplySeq) {
                             endLoad();
                             return;
                         }
@@ -766,7 +742,6 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             endLoad();
                             if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
-                            isGpsResultApplied = true;
                             if (data != null && data.has("cityName")) {
                                 currentCity = data.optString("cityName");
                                 tvCityName.setText(currentCity);
@@ -783,38 +758,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         fallbackToCache(lastCity,
                                 msg == null || msg.isEmpty() ? getString(R.string.error_get_weather_failed) : msg);
-                    }
-                });
-            }
-        });
-    }
-
-    private void loadCurrentLocationFromServer() {
-        Request request = new Request.Builder().url(BASE_URL + "location/local").build();
-        httpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                handleJson(response, new JsonHandler() {
-                    @Override
-                    public void onData(JSONObject data, boolean stale) {
-                        runOnUiThread(() -> {
-                            if (!isGpsResultApplied && data != null) {
-                                String city = data.optString("cityName", "");
-                                if (!city.isEmpty()) {
-                                    currentCity = city;
-                                    tvCityName.setText(city);
-                                    loadWeatherData(city, true);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFail(String msg) {
                     }
                 });
             }
@@ -909,9 +852,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCurrentLocation() {
-        if (hasPerformedInitialLocation && !currentCity.isEmpty()) {
-            return;
-        }
         if (!isNetworkAvailable()) {
             Toast.makeText(this, getString(R.string.location_no_network), Toast.LENGTH_SHORT).show();
         }
@@ -982,7 +922,7 @@ public class MainActivity extends AppCompatActivity {
                 locationManager.removeUpdates(locationListener);
             }
             // 不做「最后已知位置」兜底：陈旧坐标可能来自模拟器默认/异地（如 Mountain View），
-            // 宁可不显示、也不误导。冷启动已由 location/local 恢复上次城市，此处仍无城市再提示。
+            // 宁可不显示、也不误导。冷启动只信本地缓存（每台设备各自的上一座城市），此处仍无城市再提示。
             if (currentCity.isEmpty()) {
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity.this, getString(R.string.location_unavailable), Toast.LENGTH_SHORT).show();
@@ -1077,8 +1017,10 @@ public class MainActivity extends AppCompatActivity {
 
     private int attrColor(int attrRes) {
         TypedValue tv = new TypedValue();
-        getTheme().resolveAttribute(attrRes, tv, true);
-        return tv.data;
+        if (getTheme().resolveAttribute(attrRes, tv, true)) {
+            return tv.data;
+        }
+        return 0xFF2196F3;
     }
 
     private int dp(int value) {

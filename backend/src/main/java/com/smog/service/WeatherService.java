@@ -8,7 +8,7 @@ import com.smog.entity.Location;
 import com.smog.entity.Weather;
 import com.smog.repository.LocationRepository;
 import com.smog.repository.WeatherRepository;
-import com.smog.midwdget.JwtUtil;
+import com.smog.midwidget.JwtUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -162,16 +162,6 @@ public class WeatherService {
             throw (IOException) cause;
         }
         throw new IOException(cause.getMessage(), cause);
-    }
-
-    @Deprecated
-    public Location saveLocation(String cityName, Double latitude, Double longitude) {
-        Location location = new Location();
-        location.setCityName(cityName);
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
-        location.setUpdateTime(System.currentTimeMillis());
-        return locationRepository.save(location);
     }
 
     public Location getCurrentLocation() {
@@ -455,8 +445,10 @@ public class WeatherService {
             loc = locationService.getOrFetchLocation(cityName);
             log.debug("位置信息有效：经度={}, 纬度={}", loc.getLongitude(), loc.getLatitude());
         } catch (Exception e) {
-            log.warn("获取位置信息失败，仅返回天气数据: {}", e.getMessage());
-            throw new IOException(e);
+            // 只带业务消息，不要 new IOException(e)：Throwable 构造会把 getMessage() 变成
+            // "java.lang.RuntimeException: ..."，把内部类名透到客户端响应里。
+            log.warn("获取位置信息失败: {}", e.getMessage());
+            throw new IOException(e.getMessage(), e);
         }
         log.info("========== 开始获取综合天气与空气质量，城市：{} ==========", cityName);
         Weather weather = getWeatherByCity(loc.getLatitude(), loc.getLongitude(), cityName);

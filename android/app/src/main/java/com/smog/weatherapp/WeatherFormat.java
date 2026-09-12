@@ -96,11 +96,6 @@ public final class WeatherFormat {
         }
     }
 
-    /** 污染物是否需要显示单位（μg/m³），CO 用 mg/m³。 */
-    public static String pollutantUnit(String code) {
-        return "co".equalsIgnoreCase(code == null ? "" : code) ? "mg/m³" : "μg/m³";
-    }
-
     // ---- AQI 分级 ----
     private static int grade(int aqi) {
         if (aqi <= 50) return 0;

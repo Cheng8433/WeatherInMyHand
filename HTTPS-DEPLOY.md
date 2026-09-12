@@ -38,8 +38,12 @@
 
 ### 3.0 端口收敛（重要）
 
-先在云控制台**安全组/防火墙只放行 80、443**，把 8080 关掉对公网的暴露。
-好处：① 绕开明文直连；② 限流看到的是真实用户 IP（见 §3.3），不会被直连伪造 XFF 绕过。
+让 8080 不对公网暴露，两道一起做：
+
+1. **云控制台安全组/防火墙只放行 80、443**（本环境另外还在 systemd unit 里注入了 `Environment=SERVER_ADDRESS=127.0.0.1`，2026-09-09 起 8080 已确认仅回环监听）。
+2. **后端自身也只监听回环**——`application.properties` 里的 `server.address=127.0.0.1`。这一层是 2026-09-12 补的，好处是不再依赖「安全组配对了没有 / unit 里的注入还在不在」：只要后端只绑回环，公网就直连不上 8080（见 §3.3），同机 nginx 反代 `127.0.0.1:8080` 不受影响。
+
+> 说明：`http://118.178.147.156:8080` 的明文直连自 2026-09-09 起就已经不可用，指向它的**旧版 APK**（1.0.2 之前）那时就连不上了——必须走 `https://118.178.147.156/api/`。当前发布版就是这么调的，不受本次改动影响。
 
 ### 3.1 方案 A：Caddy（推荐，证书自动签发 + 自动续期）
 
@@ -48,6 +52,10 @@
 ```caddyfile
 你的域名 {
     reverse_proxy 127.0.0.1:8080
+    # Caddy 的 X-Forwarded-For 默认也是「追加」客户端 IP，同样会把客户端自带的段留在左边；
+    # 后端已按 §3.3 加固（只信可信代理 + 从右取段），这里不必额外改。
+    # 若要更保险，可用 header_up 强制覆盖：
+    #     header_up X-Forwarded-For {remote_host}
 
     encode gzip
 
@@ -91,10 +99,14 @@ server {
     ssl_certificate_key /etc/nginx/ssl/你的域名/privkey.pem;
     ssl_protocols       TLSv1.2 TLSv1.3;
 
-    # 把真实客户端 IP 交给后端（RateLimitInterceptor 读取 X-Forwarded-For 首段）
-    proxy_set_header X-Forwarded-For  $proxy_add_x_forwarded_for;
-    proxy_set_header Host             $host;
-    proxy_set_header X-Forwarded-Proto https;
+    # 把真实客户端 IP 交给后端。必须用 $remote_addr【覆盖】写。
+    # ⚠️ 不要用 $proxy_add_x_forwarded_for：它是「追加」，会把客户端自带的
+    #    X-Forwarded-For 留在最左边 —— 任何人都能每请求换一个假 IP 把伪造值塞进最左，
+    #    从而绕开按 IP 的限流（详情见 §3.3）。后端虽已按「只信可信代理 + 从右取段」加固，
+    #    这里仍覆盖写一层，做纵深防御。
+    proxy_set_header X-Forwarded-For   $remote_addr;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
 
     location / {
         proxy_pass http://127.0.0.1:8080;
@@ -103,9 +115,12 @@ server {
 }
 ```
 
-### 3.3 反代后确认的两个后端事实（已核对源码，无需改动）
+### 3.3 反代后确认的两个后端事实
 
-- **限流取的是真实 IP**：`RateLimitInterceptor.clientIp()` 先读 `X-Forwarded-For` 首段，由反代注入即正确。
+- **限流取的是真实 IP，且伪造 `X-Forwarded-For` 无效**：
+  - 公网无法直连 8080（`server.address=127.0.0.1`），伪造头只能从反代这条路进来；
+  - 后端由 Tomcat `RemoteIpValve`（`server.tomcat.remoteip.*`）解析真实 IP——它**只采信来自可信代理的连接**，并且**从右往左**跳过可信代理段、取第一个非代理地址，最后写回 `request.getRemoteAddr()`；`RateLimitInterceptor.clientIp()` 只读这个值，不再自己解析头。
+  - 所以即使 nginx 误用了 `$proxy_add_x_forwarded_for`（客户端自带段在最左），取到的仍是 nginx 追加在末尾的真实 IP；而攻击者每请求换假首段，限流 key 也不变。
 - **路径原样透传**：App 请求的是 `https://你的域名/api/...`，反代把整条 URI 透传给 Spring Boot，后端 Controller 的 `/api` 前缀不变，**无需任何 rewrite**。
 
 ---

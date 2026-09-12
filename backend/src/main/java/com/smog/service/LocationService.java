@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.smog.entity.Location;
 import com.smog.repository.LocationRepository;
-import com.smog.midwdget.JwtUtil;
+import com.smog.midwidget.JwtUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
