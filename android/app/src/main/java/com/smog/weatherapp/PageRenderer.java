@@ -90,7 +90,6 @@ final class PageRenderer {
 
     /** 页脚数据时效：正常显示观测时间；降级/读缓存时显示「离线缓存 · 更新于 …」。 */
     void renderDataTime(JSONObject data, boolean offline) {
-        if (tvDataTime == null) return;
         long ts = data == null ? 0L : data.optLong("updateTime", 0L);
         if (ts <= 0L) {
             tvDataTime.setText(activity.getString(R.string.data_time_unknown));

@@ -20,8 +20,9 @@ import android.widget.Toast;
  *   <li>重试要重发哪个请求：由调用方通过 {@link #setRetryAction} 注入，本类只负责在按钮被点时执行它。</li>
  * </ul>
  *
- * <p>构造须在 {@code setContentView} 之后。视图的 {@code != null} 判断照搬自抽取前的
- * {@code MainActivity}（保持零行为变化），并非本类新加的防御。
+ * <p>构造须在 {@code setContentView} 之后。视图不判空：这些 id 都由 aapt 编译期校验、且本类构造时
+ * 已经无条件解引用两个按钮（{@code findViewById(...).setOnClickListener(...)}），id 写错照样在这里崩，
+ * 半套判空只会把「加载条再也不出现」这类真 bug 藏起来。
  */
 final class LoadOverlay {
 
@@ -60,7 +61,7 @@ final class LoadOverlay {
     void beginLoad() {
         activity.runOnUiThread(() -> {
             pendingLoads++;
-            if (pendingLoads == 1 && loadingBar != null) {
+            if (pendingLoads == 1) {
                 loadingBar.setVisibility(View.VISIBLE);
             }
         });
@@ -72,7 +73,7 @@ final class LoadOverlay {
             if (pendingLoads > 0) {
                 pendingLoads--;
             }
-            if (pendingLoads <= 0 && loadingBar != null) {
+            if (pendingLoads <= 0) {
                 pendingLoads = 0;
                 loadingBar.setVisibility(View.GONE);
             }
@@ -80,20 +81,16 @@ final class LoadOverlay {
     }
 
     void hideErrorPanel() {
-        if (errorPanel != null) {
-            errorPanel.setVisibility(View.GONE);
-        }
+        errorPanel.setVisibility(View.GONE);
     }
 
     /** 显示错误浮层；若浮层本就可见（说明这次是重试又失败）则补一条 toast 反馈。线程安全。 */
     void showErrorPanel(final String msg) {
         activity.runOnUiThread(() -> {
-            boolean retried = errorPanel != null && errorPanel.getVisibility() == View.VISIBLE;
+            boolean retried = errorPanel.getVisibility() == View.VISIBLE;
             tvErrorMsg.setText(msg == null || msg.isEmpty()
                     ? activity.getString(R.string.error_load_failed_default) : msg);
-            if (errorPanel != null) {
-                errorPanel.setVisibility(View.VISIBLE);
-            }
+            errorPanel.setVisibility(View.VISIBLE);
             if (retried) {
                 Toast.makeText(activity,
                         msg == null || msg.isEmpty() ? activity.getString(R.string.error_load_failed_short) : msg,
