@@ -3,11 +3,9 @@ package com.smog.controller;
 import com.smog.entity.Location;
 import com.smog.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -22,6 +20,10 @@ public class LocationController {
      * 1. 上传经纬度：{"latitude": 39.9042, "longitude": 116.4074}（逆地理编码得城市名）
      * 2. 上传城市名：{"cityName": "北京", "latitude": 0, "longitude": 0}
      * 错误统一由 GlobalExceptionHandler 返回 {success:false, message}（HTTP 200）
+     *
+     * <p>隐私口径：这里上传的经纬度**只用于当次逆地理编码**，落库的是解析出的【城市】坐标，
+     * 不是调用方的原始定位。天气只需要城市级粒度，长期留存米级个人位置既无必要也不合规
+     * （位置属敏感个人信息），因此这条约束放在服务端强制，不依赖某个客户端版本自觉。
      */
     @PostMapping("/save")
     public Location saveLocation(@RequestBody Map<String, Object> payload) throws IOException {
@@ -38,27 +40,5 @@ public class LocationController {
         } else {
             throw new IllegalArgumentException("无效的请求参数");
         }
-    }
-
-    /**
-     * 获取最近一次保存的位置（用于冷启动恢复，无参数）
-     */
-    @GetMapping("/local")
-    public ResponseEntity<?> getLatestLocation() {
-        Location location = locationService.getCurrentLocation();
-        if (location == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "没有历史位置"));
-        }
-        // 用 HashMap 而非 Map.of：latitude/longitude 是可空列，Map.of 遇 null 会直接抛 NPE，
-        // 而 /local 是冷启动恢复城市的必经接口，不能因为一条异常行就整条链路失败。
-        Map<String, Object> data = new HashMap<>();
-        data.put("cityName", location.getCityName());
-        data.put("latitude", location.getLatitude());
-        data.put("longitude", location.getLongitude());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("data", data);
-        return ResponseEntity.ok(result);
     }
 }

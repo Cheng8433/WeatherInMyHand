@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.smog.entity.Location;
 import com.smog.entity.Weather;
-import com.smog.repository.LocationRepository;
 import com.smog.repository.WeatherRepository;
 import com.smog.midwidget.JwtUtil;
 import okhttp3.OkHttpClient;
@@ -30,9 +29,6 @@ import java.util.concurrent.TimeUnit;
 public class WeatherService {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
-
-    @Autowired
-    private LocationRepository locationRepository;
 
     @Autowired
     private WeatherRepository weatherRepository;
@@ -162,10 +158,6 @@ public class WeatherService {
             throw (IOException) cause;
         }
         throw new IOException(cause.getMessage(), cause);
-    }
-
-    public Location getCurrentLocation() {
-        return locationRepository.findTopByOrderByUpdateTimeDesc().orElse(null);
     }
 
     // ==================== 实时天气 API ====================

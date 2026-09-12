@@ -91,22 +91,15 @@ public class LocationService {
     }
 
     /**
-     * 从 API 获取城市位置并保存到数据库
+     * 从 API 获取城市位置并保存到数据库。
+     * 同一城市仅保留最新一条（存在则更新），与 {@link #saveLocationByLatLon} 一致——
+     * 否则每搜一次城市就 INSERT 一行，表会随使用无限增长、同一城市堆出重复行。
      * @param cityName 城市名称
      * @return 保存后的 Location 实体
      * @throws IOException 如果获取或保存失败
      */
     public Location saveLocationFromApi(String cityName) throws IOException {
-        Location location = fetchLocationFromApi(cityName);
-        return locationRepository.save(location);
-    }
-
-    /**
-     * 获取数据库中最近一次查询的位置（不区分城市）
-     * @return 最近一次的位置，可能为空
-     */
-    public Location getCurrentLocation() {
-        return locationRepository.findTopByOrderByUpdateTimeDesc().orElse(null);
+        return upsertByCityName(fetchLocationFromApi(cityName));
     }
 
     /**
@@ -127,21 +120,14 @@ public class LocationService {
     }
 
     /**
-     * 根据城市名称从数据库查询位置（不会触发 API 调用）
-     * @param cityName 城市名称
-     * @return 可能为空
-     */
-    public Location getLocationFromDB(String cityName) {
-        return locationRepository.findTopByCityNameOrderByUpdateTimeDesc(cityName).orElse(null);
-    }
-
-    // 在 LocationService 中添加以下方法
-
-    /**
      * 逆地理编码：根据经纬度查询最近城市（不入库）。和风 geo/v2/city/lookup 支持传入 "经度,纬度" 反向查找。
-     * @param lat 纬度
-     * @param lon 经度
-     * @return 未保存的 Location（含 API 返回的标准城市名与原始经纬度）
+     *
+     * <p>返回的 Location 里是【API 返回的匹配城市坐标（城市中心）】，**不是调用方传入的原始定位**。
+     * 这是刻意的：位置属敏感个人信息，天气又只需要城市级粒度，没必要留存米级个人位置；
+     * 且把这条约束放在服务端，任何客户端版本都无法绕过去往库里写精确坐标。
+     * @param lat 纬度（仅用于当次查询，不落库）
+     * @param lon 经度（仅用于当次查询，不落库）
+     * @return 未保存的 Location（含 API 返回的标准城市名与该城市坐标）
      * @throws IOException 当 API 调用失败或未找到城市时
      */
     public Location reverseGeocode(double lat, double lon) throws IOException {
@@ -175,8 +161,9 @@ public class LocationService {
 
             Location location = new Location();
             location.setCityName(first.get("name").getAsString());
-            location.setLatitude(lat);
-            location.setLongitude(lon);
+            // 存城市坐标，不存传入的 lat/lon（见方法注释）
+            location.setLatitude(Double.parseDouble(first.get("lat").getAsString()));
+            location.setLongitude(Double.parseDouble(first.get("lon").getAsString()));
             location.setUpdateTime(System.currentTimeMillis());
             return location;
         }
@@ -185,9 +172,17 @@ public class LocationService {
     /**
      * 根据经纬度保存位置（逆地理编码出城市名后入库）。
      * 同一城市仅保留最新一条（存在则更新），避免每次上报都新增行导致表无限增长。
+     * 落库坐标为城市中心（见 {@link #reverseGeocode}），非调用方原始定位。
      */
     public Location saveLocationByLatLon(double lat, double lon) throws IOException {
-        Location fetched = reverseGeocode(lat, lon);
+        return upsertByCityName(reverseGeocode(lat, lon));
+    }
+
+    /**
+     * 按【城市名】upsert：存在同城行就更新其坐标与时间，否则插入新行。
+     * 两条写路径（按城市名 / 按经纬度）共用，保证同一城市在库里始终只有一行。
+     */
+    private Location upsertByCityName(Location fetched) {
         return locationRepository.findTopByCityNameOrderByUpdateTimeDesc(fetched.getCityName())
                 .map(existing -> {
                     existing.setLatitude(fetched.getLatitude());

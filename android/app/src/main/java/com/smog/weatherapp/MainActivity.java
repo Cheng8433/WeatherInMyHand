@@ -892,7 +892,9 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.removeCallbacks(locationTimeoutRunnable);
                     locationTimeoutRunnable = null;
                 }
-                saveLocationToServer(location.getLatitude(), location.getLongitude());
+                // 不再把原始坐标上报后端：既无必要（城市缓存由后端 getOrFetchLocation 按需自填，
+                // 它按城市名落库的是城市中心坐标），也是隐私要求——位置属敏感个人信息，
+                // 天气只要城市级粒度，坐标留在这部手机上就够。详见 AGENTS.md。
                 loadWeatherDataByLocation(location.getLatitude(), location.getLongitude());
             }
 
@@ -939,17 +941,6 @@ public class MainActivity extends AppCompatActivity {
             json.put("cityName", cityName);
             json.put("latitude", 0);
             json.put("longitude", 0);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        postLocation(json);
-    }
-
-    private void saveLocationToServer(double lat, double lon) {
-        JSONObject json = new JSONObject();
-        try {
-            json.put("latitude", lat);
-            json.put("longitude", lon);
         } catch (JSONException e) {
             e.printStackTrace();
         }
