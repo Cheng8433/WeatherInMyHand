@@ -86,6 +86,14 @@
             <version>4.0.0</version>
         </dependency>
 
+        <!-- 测试专用（test scope）：不打进 fat jar，版本由 spring-boot-starter-parent 统一管理。
+             含 JUnit 5 / AssertJ / Mockito / spring-test（MockHttpServletRequest 等）。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -57,4 +57,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
+
+    // 本地 JVM 单测（testImplementation，不会打进 APK）。跑法：./gradlew :app:testDebugUnitTest
+    testImplementation 'junit:junit:4.13.2'
 }

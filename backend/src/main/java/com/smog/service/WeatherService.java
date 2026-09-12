@@ -589,29 +589,31 @@ public class WeatherService {
     }
 
     // ==================== 安全的 JSON 解析辅助方法 ====================
+    // 纯函数（只依赖入参，不读实例状态），故声明为 static；包级可见而非 private，
+    // 是为了让同包的 WeatherServiceJsonParseTest 能直接覆盖「上游返回 N/A / 空串」这类容错分支。
 
-    private JsonObject getJsonObject(JsonObject parent, String key) {
+    static JsonObject getJsonObject(JsonObject parent, String key) {
         if (parent.has(key) && parent.get(key).isJsonObject()) {
             return parent.getAsJsonObject(key);
         }
         return null;
     }
 
-    private JsonArray getJsonArray(JsonObject parent, String key) {
+    static JsonArray getJsonArray(JsonObject parent, String key) {
         if (parent.has(key) && parent.get(key).isJsonArray()) {
             return parent.getAsJsonArray(key);
         }
         return null;
     }
 
-    private String getString(JsonObject obj, String key) {
+    static String getString(JsonObject obj, String key) {
         if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
             return obj.get(key).getAsString();
         }
         return null;
     }
 
-    private Double getDouble(JsonObject obj, String key) {
+    static Double getDouble(JsonObject obj, String key) {
         if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
             try {
                 return obj.get(key).getAsDouble();
@@ -624,7 +626,7 @@ public class WeatherService {
         return null;
     }
 
-    private Integer getInt(JsonObject obj, String key) {
+    static Integer getInt(JsonObject obj, String key) {
         if (obj.has(key) && obj.get(key).isJsonPrimitive()) {
             try {
                 return obj.get(key).getAsInt();
