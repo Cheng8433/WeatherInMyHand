@@ -9,7 +9,10 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,7 +46,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -75,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private WeatherSceneView weatherScene;
 
     // today
-    private TextView tvWeatherEmoji, tvWeatherDesc, tvTempNum, tvTempUnit, tvHeroSub;
+    private TextView tvWeatherEmoji, tvWeatherDesc, tvTempNum, tvTempUnit, tvHeroSub, tvDataTime;
     private TextView tvMFeels, tvMHumidity, tvMCloud, tvMVis, tvMPressure, tvMPrecip, tvMDew, tvMWindSp;
     private TextView tvWindMain, tvWindSub;
 
@@ -255,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         tvTempNum = findViewById(R.id.tvTempNum);
         tvTempUnit = findViewById(R.id.tvTempUnit);
         tvHeroSub = findViewById(R.id.tvHeroSub);
+        tvDataTime = findViewById(R.id.tvDataTime);
 
         tvMFeels = findViewById(R.id.tvMFeels);
         tvMHumidity = findViewById(R.id.tvMHumidity);
@@ -341,7 +347,11 @@ public class MainActivity extends AppCompatActivity {
 
     // ==================== 数据落地：统一渲染三页 ====================
 
-    private void applyAllPages(JSONObject data) {
+    /**
+     * @param offline 数据并非本次实时取得：后端上游失败降级（stale）或直接读的本地缓存。
+     *                页脚据此明示「离线缓存」，避免用户把旧数据当实时。
+     */
+    private void applyAllPages(JSONObject data, boolean offline) {
         if (data == null) return;
         lastData = data;
         hideErrorPanel();   // 有内容可看就把错误浮层收起
@@ -350,11 +360,26 @@ public class MainActivity extends AppCompatActivity {
         if (!city.isEmpty()) {
             WeatherCache.save(this, city, data);
         }
+        renderDataTime(data, offline);
         renderToday(data);
         renderAir(data);
         if (currentTab == TAB_TREND) {
             renderTrend(data);
         }
+    }
+
+    /** 页脚数据时效：正常显示观测时间；降级/读缓存时显示「离线缓存 · 更新于 …」。 */
+    private void renderDataTime(JSONObject data, boolean offline) {
+        if (tvDataTime == null) return;
+        long ts = data == null ? 0L : data.optLong("updateTime", 0L);
+        if (ts <= 0L) {
+            tvDataTime.setText(getString(R.string.data_time_unknown));
+            return;
+        }
+        String time = new SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(new Date(ts));
+        tvDataTime.setText(offline
+                ? getString(R.string.data_time_offline, time)
+                : getString(R.string.data_time_fresh, time));
     }
 
     // ==================== 全局加载态 / 错误重试 ====================
@@ -414,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
                 currentCity = city;
                 tvCityName.setText(city);
             }
-            applyAllPages(cached);
+            applyAllPages(cached, true);   // 本地缓存：明示为离线数据
         }
     }
 
@@ -440,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
         final JSONObject cached = hit;
         runOnUiThread(() -> {
             if (cached != null) {
-                applyAllPages(cached);
+                applyAllPages(cached, true);   // 兜底读的是本地缓存：明示为离线数据
                 Toast.makeText(this, getString(R.string.toast_use_cache), Toast.LENGTH_SHORT).show();
             } else if (lastData != null) {
                 Toast.makeText(this,
@@ -467,7 +492,7 @@ public class MainActivity extends AppCompatActivity {
                 String cn = exact.optString("cityName", city);
                 currentCity = cn;
                 tvCityName.setText(cn);
-                applyAllPages(exact);
+                applyAllPages(exact, true);   // 搜索失败后回落到该城缓存：明示为离线数据
                 Toast.makeText(this, getString(R.string.toast_use_cache), Toast.LENGTH_SHORT).show();
             } else {
                 showErrorPanel(errorMsg == null || errorMsg.isEmpty()
@@ -506,7 +531,7 @@ public class MainActivity extends AppCompatActivity {
         setDouble(tvMDew, d.optDouble("dew", Double.NaN), "°", 0);
         setDouble(tvMWindSp, d.optDouble("windSpeed", Double.NaN), " km/h", 0);
 
-        String dir = WeatherFormat.windDirCn(d.optString("windDir", ""));
+        String dir = WeatherFormat.windDirCn(getResources(), d.optString("windDir", ""));
         String scale = d.optString("windScale", "").trim();
         tvWindMain.setText(dir + (scale.isEmpty() ? "" : "  " + scale));
         double spd = d.optDouble("windSpeed", Double.NaN);
@@ -534,12 +559,13 @@ public class MainActivity extends AppCompatActivity {
         tvAqiNum.setBackground(pill);
 
         String level = d.optString("airQuality", "");
-        tvAqiLevel.setText(level.isEmpty() ? WeatherFormat.aqiLevel(aqi) : level);
+        tvAqiLevel.setText(level.isEmpty() ? WeatherFormat.aqiLevel(getResources(), aqi) : level);
         tvAqiLevel.setTextColor(color);
-        tvAqiAssessment.setText(WeatherFormat.assessment(aqi));
+        tvAqiAssessment.setText(WeatherFormat.assessment(getResources(), aqi));
 
         String primary = d.optString("primaryPollutant", "");
-        tvPrimaryPoll.setText(primary.isEmpty() ? "--" : WeatherFormat.pollutantName(primary));
+        tvPrimaryPoll.setText(primary.isEmpty() ? "--"
+                : WeatherFormat.pollutantName(getResources(), primary));
 
         setPoll(tvPollPm25, d, "pm25Value", "pm2p5");
         setPoll(tvPollPm10, d, "pm10Value", "pm10");
@@ -548,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
         setPoll(tvPollCo, d, "co", "co");
         setPoll(tvPollSo2, d, "so2", "so2");
 
-        tvHealthAdvice.setText(WeatherFormat.healthAdvice(aqi));
+        tvHealthAdvice.setText(WeatherFormat.healthAdvice(getResources(), aqi));
     }
 
     private void renderTrend(JSONObject d) {
@@ -621,7 +647,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 handleJson(response, new JsonHandler() {
                     @Override
-                    public void onData(JSONObject data) {
+                    public void onData(JSONObject data, boolean stale) {
                         runOnUiThread(() -> {
                             endLoad();
                             if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
@@ -631,7 +657,7 @@ public class MainActivity extends AppCompatActivity {
                                 currentCity = cityName;
                             }
                             tvCityName.setText(currentCity);
-                            applyAllPages(data);
+                            applyAllPages(data, stale);
                             saveSearchedCityToServer(currentCity);
                         });
                     }
@@ -686,12 +712,12 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 handleJson(response, new JsonHandler() {
                     @Override
-                    public void onData(JSONObject data) {
+                    public void onData(JSONObject data, boolean stale) {
                         runOnUiThread(() -> {
                             endLoad();
                             if (!guardByGps && reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
                             if (!guardByGps || !isGpsResultApplied) {
-                                applyAllPages(data);
+                                applyAllPages(data, stale);
                             }
                         });
                     }
@@ -736,7 +762,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 handleJson(response, new JsonHandler() {
                     @Override
-                    public void onData(JSONObject data) {
+                    public void onData(JSONObject data, boolean stale) {
                         runOnUiThread(() -> {
                             endLoad();
                             if (reqSeq != uiApplySeq) return;   // 已被更晚的请求取代
@@ -745,7 +771,7 @@ public class MainActivity extends AppCompatActivity {
                                 currentCity = data.optString("cityName");
                                 tvCityName.setText(currentCity);
                             }
-                            applyAllPages(data);
+                            applyAllPages(data, stale);
                         });
                     }
 
@@ -774,7 +800,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 handleJson(response, new JsonHandler() {
                     @Override
-                    public void onData(JSONObject data) {
+                    public void onData(JSONObject data, boolean stale) {
                         runOnUiThread(() -> {
                             if (!isGpsResultApplied && data != null) {
                                 String city = data.optString("cityName", "");
@@ -811,7 +837,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 JSONObject json = new JSONObject(body);
                 if (json.optBoolean("success", false)) {
-                    handler.onData(json.optJSONObject("data"));
+                    // stale 是契约里 data 的同级字段：true 表示上游失败、后端降级回了最近一次快照
+                    handler.onData(json.optJSONObject("data"), json.optBoolean("stale", false));
                 } else {
                     handler.onFail(json.optString("message", ""));
                 }
@@ -824,7 +851,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private interface JsonHandler {
-        void onData(JSONObject data);
+        /** @param stale 后端标记的降级数据（本次上游失败，内容是旧快照） */
+        void onData(JSONObject data, boolean stale);
 
         void onFail(String msg);
     }
@@ -1057,16 +1085,32 @@ public class MainActivity extends AppCompatActivity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
+    /**
+     * 是否可联网。Android 6+ 走 getActiveNetwork + NetworkCapabilities：
+     * 旧的 getActiveNetworkInfo 在部分机型/瞬态下会返回 null，会把「有网」误判成「无网络」
+     * 从而白白跳过请求，这里只判 NET_CAPABILITY_INTERNET，不要求 VALIDATED，
+     * 避免门户认证等场景被误判；真连不通时交给 OkHttp 失败并按「网络错误」提示。
+     * 拿不到 ConnectivityManager 时不阻断请求，宁可让它去试。
+     */
+    @SuppressWarnings("deprecation")
     private boolean isNetworkAvailable() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
-            return false;
+            return true;   // 权限异常时不拦请求，交给真实请求去暴露结果
         }
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm != null) {
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            return activeNetwork != null && activeNetwork.isConnected();
+        if (cm == null) {
+            return true;
         }
-        return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network active = cm.getActiveNetwork();
+            if (active == null) {
+                return false;
+            }
+            NetworkCapabilities caps = cm.getNetworkCapabilities(active);
+            return caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        }
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 }

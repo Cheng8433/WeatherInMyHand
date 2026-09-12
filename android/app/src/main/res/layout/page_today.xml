@@ -401,5 +401,17 @@
                 android:textSize="12sp"
                 android:textColor="?attr/textSecondary"
                 android:alpha="0.7" />
+
+        <!-- ===== 数据时效标注：降级/离线时把「这数据有多旧」明写出来 ===== -->
+        <TextView
+                android:id="@+id/tvDataTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="@string/data_time_unknown"
+                android:textSize="12sp"
+                android:textColor="?attr/textSecondary"
+                android:alpha="0.7" />
     </LinearLayout>
 </ScrollView>

@@ -49,13 +49,16 @@ public class LocationController {
         if (location == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "没有历史位置"));
         }
+        // 用 HashMap 而非 Map.of：latitude/longitude 是可空列，Map.of 遇 null 会直接抛 NPE，
+        // 而 /local 是冷启动恢复城市的必经接口，不能因为一条异常行就整条链路失败。
+        Map<String, Object> data = new HashMap<>();
+        data.put("cityName", location.getCityName());
+        data.put("latitude", location.getLatitude());
+        data.put("longitude", location.getLongitude());
+
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
-        result.put("data", Map.of(
-                "cityName", location.getCityName(),
-                "latitude", location.getLatitude(),
-                "longitude", location.getLongitude()
-        ));
+        result.put("data", data);
         return ResponseEntity.ok(result);
     }
 }

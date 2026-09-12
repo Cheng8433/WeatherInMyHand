@@ -21,8 +21,8 @@ android {
         applicationId "com.smog.weatherapp"
         minSdk 21
         targetSdk 34
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 5
+        versionName "1.0.4"
         buildConfigField "String", "BACK_HOST_API", "\"https://118.178.147.156/api/\""
     }
 
@@ -39,7 +39,10 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            // 上线包开 R8：压缩 + 资源裁剪 + 混淆。规则见 app/proguard-rules.pro，
+            // 内含 AnyChart/@JavascriptInterface/自定义 View 的保留项。
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (hasSigning) {
                 signingConfig signingConfigs.release

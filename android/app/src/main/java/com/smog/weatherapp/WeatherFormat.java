@@ -1,9 +1,14 @@
 package com.smog.weatherapp;
 
+import android.content.res.Resources;
+
 import java.util.Locale;
 
 /**
  * 展示层格式化：天气 → emoji、风向英文缩写 → 中文、污染物 → 中文名、AQI 分级色/文案。
+ *
+ * 除 emoji 与 SI 单位外，所有面向用户的文字都取自 strings.xml / arrays.xml（见 aqi_levels、
+ * aqi_assessments、aqi_health_advice、wind_dirs、pollutant_*），方法因此需要传入 Resources。
  */
 public final class WeatherFormat {
 
@@ -50,15 +55,14 @@ public final class WeatherFormat {
         return "🌤";
     }
 
-    private static final String[][] COMPASS = {
-            {"N", "北"}, {"NNE", "北北东"}, {"NE", "东北"}, {"ENE", "东北东"},
-            {"E", "东"}, {"ESE", "东南东"}, {"SE", "东南"}, {"SSE", "南南东"},
-            {"S", "南"}, {"SSW", "南南西"}, {"SW", "西南"}, {"WSW", "西南西"},
-            {"W", "西"}, {"WNW", "西北西"}, {"NW", "西北"}, {"NNW", "北北西"}
+    /** 和风 compass 缩写的枚举顺序；下标与 arrays.xml 的 wind_dirs 一一对应。 */
+    private static final String[] COMPASS = {
+            "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
     };
 
     /** 和风 compass 缩写 → 中文风，如 "SE" → "东南风"；无法识别原样返回。 */
-    public static String windDirCn(String code) {
+    public static String windDirCn(Resources res, String code) {
         if (code == null || code.trim().isEmpty()) {
             return "--";
         }
@@ -67,26 +71,27 @@ public final class WeatherFormat {
         if (c.contains("风")) {
             return c;
         }
-        for (String[] pair : COMPASS) {
-            if (pair[0].equalsIgnoreCase(c)) {
-                return pair[1] + "风";
+        String[] names = res.getStringArray(R.array.wind_dirs);
+        for (int i = 0; i < COMPASS.length && i < names.length; i++) {
+            if (COMPASS[i].equalsIgnoreCase(c)) {
+                return names[i];
             }
         }
         return code;
     }
 
     /** 污染物 code → 中文名。 */
-    public static String pollutantName(String code) {
+    public static String pollutantName(Resources res, String code) {
         if (code == null || code.isEmpty()) {
             return "--";
         }
         switch (code.toLowerCase(Locale.ROOT)) {
-            case "pm2p5": return "颗粒物 PM2.5";
-            case "pm10": return "可吸入颗粒物 PM10";
-            case "no2": return "二氧化氮 NO₂";
-            case "so2": return "二氧化硫 SO₂";
-            case "co": return "一氧化碳 CO";
-            case "o3": return "臭氧 O₃";
+            case "pm2p5": return res.getString(R.string.pollutant_pm2p5);
+            case "pm10": return res.getString(R.string.pollutant_pm10);
+            case "no2": return res.getString(R.string.pollutant_no2);
+            case "so2": return res.getString(R.string.pollutant_so2);
+            case "co": return res.getString(R.string.pollutant_co);
+            case "o3": return res.getString(R.string.pollutant_o3);
             default: return code.toUpperCase(Locale.ROOT);
         }
     }
@@ -124,45 +129,25 @@ public final class WeatherFormat {
         return (color & 0x00FFFFFF) | 0x24000000;
     }
 
+    /** 取分级数组的第 grade(aqi) 项，长度不足时原样返回兜底值。 */
+    private static String gradeItem(Resources res, int arrayId, int aqi, String fallback) {
+        String[] items = res.getStringArray(arrayId);
+        int g = grade(aqi);
+        return g < items.length ? items[g] : fallback;
+    }
+
     /** AQI → 中文等级（后端给了 airQuality 时优先用后端文本）。 */
-    public static String aqiLevel(int aqi) {
-        switch (grade(aqi)) {
-            case 0: return "优";
-            case 1: return "良";
-            case 2: return "轻度污染";
-            case 3: return "中度污染";
-            case 4: return "重度污染";
-            default: return "严重污染";
-        }
+    public static String aqiLevel(Resources res, int aqi) {
+        return gradeItem(res, R.array.aqi_levels, aqi, "--");
     }
 
     /** AQI → 综合评估一句话。 */
-    public static String assessment(int aqi) {
-        switch (grade(aqi)) {
-            case 0: return "空气质量非常好，适合所有户外活动。";
-            case 1: return "空气质量可接受，敏感人群请注意防护。";
-            case 2: return "轻度污染，敏感人群应减少户外活动。";
-            case 3: return "中度污染，建议减少户外活动，外出佩戴口罩。";
-            case 4: return "重度污染，避免户外活动，尽量待在室内。";
-            default: return "严重污染，请尽可能留在室内并开启空气净化。";
-        }
+    public static String assessment(Resources res, int aqi) {
+        return gradeItem(res, R.array.aqi_assessments, aqi, "");
     }
 
     /** AQI → 健康建议（换行条目）。 */
-    public static String healthAdvice(int aqi) {
-        switch (grade(aqi)) {
-            case 0:
-                return "• 可正常进行户外活动\n• 适合开窗通风";
-            case 1:
-                return "• 敏感人群可佩戴口罩\n• 减少长时间剧烈运动";
-            case 2:
-                return "• 敏感人群避免长时间户外活动\n• 建议佩戴口罩\n• 减少剧烈运动";
-            case 3:
-                return "• 外出佩戴口罩\n• 减少户外活动\n• 避免室外锻炼";
-            case 4:
-                return "• 尽量待在室内\n• 关闭门窗\n• 使用空气净化器";
-            default:
-                return "• 避免一切户外活动\n• 关闭门窗并使用空气净化器\n• 必须外出时佩戴防霾口罩";
-        }
+    public static String healthAdvice(Resources res, int aqi) {
+        return gradeItem(res, R.array.aqi_health_advice, aqi, "");
     }
 }

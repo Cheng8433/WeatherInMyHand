@@ -8,4 +8,56 @@
         <item>@string/theme_sunset</item>
         <item>@string/theme_immersive</item>
     </string-array>
+
+    <!-- 下面三个数组均与 WeatherFormat.grade() 的 0..5 分级一一对应，顺序勿调换 -->
+    <!-- AQI 等级：优 / 良 / 轻度污染 / 中度污染 / 重度污染 / 严重污染 -->
+    <string-array name="aqi_levels">
+        <item>优</item>
+        <item>良</item>
+        <item>轻度污染</item>
+        <item>中度污染</item>
+        <item>重度污染</item>
+        <item>严重污染</item>
+    </string-array>
+
+    <!-- AQI 综合评估（一句话） -->
+    <string-array name="aqi_assessments">
+        <item>空气质量非常好，适合所有户外活动。</item>
+        <item>空气质量可接受，敏感人群请注意防护。</item>
+        <item>轻度污染，敏感人群应减少户外活动。</item>
+        <item>中度污染，建议减少户外活动，外出佩戴口罩。</item>
+        <item>重度污染，避免户外活动，尽量待在室内。</item>
+        <item>严重污染，请尽可能留在室内并开启空气净化。</item>
+    </string-array>
+
+    <!-- AQI 健康建议（多行，\n 为换行） -->
+    <string-array name="aqi_health_advice">
+        <item>• 可正常进行户外活动\n• 适合开窗通风</item>
+        <item>• 敏感人群可佩戴口罩\n• 减少长时间剧烈运动</item>
+        <item>• 敏感人群避免长时间户外活动\n• 建议佩戴口罩\n• 减少剧烈运动</item>
+        <item>• 外出佩戴口罩\n• 减少户外活动\n• 避免室外锻炼</item>
+        <item>• 尽量待在室内\n• 关闭门窗\n• 使用空气净化器</item>
+        <item>• 避免一切户外活动\n• 关闭门窗并使用空气净化器\n• 必须外出时佩戴防霾口罩</item>
+    </string-array>
+
+    <!-- 风向中文名：顺序须与 WeatherFormat.COMPASS 完全一致
+         （N/NNE/NE/ENE/E/ESE/SE/SSE/S/SSW/SW/WSW/W/WNW/NW/NNW） -->
+    <string-array name="wind_dirs">
+        <item>北风</item>
+        <item>北北东风</item>
+        <item>东北风</item>
+        <item>东北东风</item>
+        <item>东风</item>
+        <item>东南东风</item>
+        <item>东南风</item>
+        <item>南南东风</item>
+        <item>南风</item>
+        <item>南南西风</item>
+        <item>西南风</item>
+        <item>西南西风</item>
+        <item>西风</item>
+        <item>西北西风</item>
+        <item>西北风</item>
+        <item>北北西风</item>
+    </string-array>
 </resources>

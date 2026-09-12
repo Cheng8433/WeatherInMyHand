@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,8 +58,8 @@ public class WeatherService {
     private static final long CACHE_TTL_MS = 10 * 60 * 1000L;
 
     /** key = 城市名（trim 后）。info（综合）与 air（仅空气）分开两套快照，避免缓存条目互相覆盖。 */
-    private final Map<String, CacheEntry> infoCache = new ConcurrentHashMap<>();
-    private final Map<String, CacheEntry> airCache = new ConcurrentHashMap<>();
+    private final ResultCache infoCache = new ResultCache();
+    private final ResultCache airCache = new ResultCache();
 
     /** 一次成功结果的不可变快照：数据 + 抓取时刻 */
     private static final class CacheEntry {
@@ -67,6 +68,65 @@ public class WeatherService {
         CacheEntry(Weather weather, long fetchedAt) {
             this.weather = weather;
             this.fetchedAt = fetchedAt;
+        }
+    }
+
+    /**
+     * 一个接口的快照缓存：TTL + 容量上限（超出先清过期、再淘汰最旧）+ 按城市单飞。
+     * 单飞的意义：同城并发首次请求时，后到者拿同一把 key 锁并在锁内复查缓存，避免同时打和风把配额翻倍。
+     */
+    private static final class ResultCache {
+
+        /** 最多缓存多少个城市的快照；正常单机使用远达不到，纯粹防“城市名被刷”导致内存无界增长。 */
+        private static final int MAX_ENTRIES = 200;
+
+        private final Map<String, CacheEntry> entries = new ConcurrentHashMap<>();
+        private final Map<String, Object> locks = new ConcurrentHashMap<>();
+
+        /** 命中且未过期则返回条目，否则返回 null（过期条目先不删，留给降级用） */
+        CacheEntry fresh(String key) {
+            CacheEntry e = entries.get(key);
+            if (e != null && System.currentTimeMillis() - e.fetchedAt < CACHE_TTL_MS) {
+                return e;
+            }
+            return null;
+        }
+
+        /** 不论是否过期，取最近一次成功快照（用于上游失败时的降级） */
+        CacheEntry lastKnown(String key) {
+            return entries.get(key);
+        }
+
+        void put(String key, CacheEntry entry) {
+            entries.put(key, entry);
+            if (entries.size() > MAX_ENTRIES) {
+                evict();
+            }
+        }
+
+        /** 按城市取互斥锁，保证同城并发只触发一次上游请求。 */
+        Object lockFor(String key) {
+            if (locks.size() > MAX_ENTRIES) {
+                locks.keySet().removeIf(k -> !entries.containsKey(k));
+            }
+            return locks.computeIfAbsent(key, k -> new Object());
+        }
+
+        /** 先清已过期条目；仍超上限则按抓取时间淘汰最旧的若干条（连同其锁）。 */
+        private void evict() {
+            long now = System.currentTimeMillis();
+            entries.entrySet().removeIf(e -> now - e.getValue().fetchedAt >= CACHE_TTL_MS);
+            if (entries.size() <= MAX_ENTRIES) {
+                return;
+            }
+            List<Map.Entry<String, CacheEntry>> sorted = new ArrayList<>(entries.entrySet());
+            sorted.sort(Comparator.comparingLong(e -> e.getValue().fetchedAt));
+            int overflow = sorted.size() - MAX_ENTRIES;
+            for (int i = 0; i < overflow; i++) {
+                String key = sorted.get(i).getKey();
+                entries.remove(key);
+                locks.remove(key);
+            }
         }
     }
 
@@ -86,23 +146,14 @@ public class WeatherService {
         return cityName == null ? "" : cityName.trim();
     }
 
-    /** 命中且未过期则返回条目，否则返回 null（过期条目先不删，留给降级用） */
-    private CacheEntry fresh(Map<String, CacheEntry> cache, String key) {
-        CacheEntry e = cache.get(key);
-        if (e != null && System.currentTimeMillis() - e.fetchedAt < CACHE_TTL_MS) {
-            return e;
-        }
-        return null;
-    }
-
     /**
-     * 上游失败时：有缓存快照就降级返回（带 stale），否则原样抛出让统一异常处理兜底。
+     * 上游失败时：有缓存快照就降级返回（带 stale），否则原样抛出/包装成 IOException 交给统一异常处理。
      * 兼容 RuntimeException（如定位解析失败）：直接冒泡会绕过“HTTP 200 + success:false”契约，
      * 统一包装成 IOException，保证错误响应格式与其它端点一致。
      */
-    private WeatherResult staleOrRethrow(Map<String, CacheEntry> cache, String key, Exception cause)
+    private WeatherResult staleOrRethrow(ResultCache cache, String key, Exception cause)
             throws IOException {
-        CacheEntry stale = cache.get(key);
+        CacheEntry stale = cache.lastKnown(key);
         if (stale != null) {
             log.warn("上游请求失败（{}），降级返回城市【{}】的最近一次成功缓存", cause.getMessage(), key);
             return new WeatherResult(stale.weather, true);
@@ -505,36 +556,51 @@ public class WeatherService {
     /** /api/weather/info（城市版）带缓存入口：10 分钟内命中免打和风，失败时降级返回最近成功快照 */
     public WeatherResult getWeatherAndAirQualityCached(String cityName) throws IOException {
         String key = cacheKey(cityName);
-        CacheEntry hit = fresh(infoCache, key);
+        CacheEntry hit = infoCache.fresh(key);
         if (hit != null) {
             log.debug("命中综合天气缓存：{}", key);
             return new WeatherResult(hit.weather, false);
         }
-        try {
-            Weather fresh = getWeatherAndAirQuality(cityName);
-            infoCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
-            log.debug("已刷新综合天气缓存：{}", key);
-            return new WeatherResult(fresh, false);
-        } catch (IOException | RuntimeException e) {
-            return staleOrRethrow(infoCache, key, e);
+        // 单飞：同城并发只让一个线程打和风，其余在锁内复查缓存后直接复用
+        synchronized (infoCache.lockFor(key)) {
+            CacheEntry again = infoCache.fresh(key);
+            if (again != null) {
+                log.debug("并发合并，命中综合天气缓存：{}", key);
+                return new WeatherResult(again.weather, false);
+            }
+            try {
+                Weather fresh = getWeatherAndAirQuality(cityName);
+                infoCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
+                log.debug("已刷新综合天气缓存：{}", key);
+                return new WeatherResult(fresh, false);
+            } catch (IOException | RuntimeException e) {
+                return staleOrRethrow(infoCache, key, e);
+            }
         }
     }
 
     /** /api/weather/air 带缓存入口：命中免打和风空气质量接口，失败时降级返回最近成功快照 */
     public WeatherResult getAirQualityCached(String cityName) throws IOException {
         String key = cacheKey(cityName);
-        CacheEntry hit = fresh(airCache, key);
+        CacheEntry hit = airCache.fresh(key);
         if (hit != null) {
             log.debug("命中空气质量缓存：{}", key);
             return new WeatherResult(hit.weather, false);
         }
-        try {
-            Weather fresh = getAirQualityByCity(cityName);
-            airCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
-            log.debug("已刷新空气质量缓存：{}", key);
-            return new WeatherResult(fresh, false);
-        } catch (IOException | RuntimeException e) {
-            return staleOrRethrow(airCache, key, e);
+        synchronized (airCache.lockFor(key)) {
+            CacheEntry again = airCache.fresh(key);
+            if (again != null) {
+                log.debug("并发合并，命中空气质量缓存：{}", key);
+                return new WeatherResult(again.weather, false);
+            }
+            try {
+                Weather fresh = getAirQualityByCity(cityName);
+                airCache.put(key, new CacheEntry(fresh, System.currentTimeMillis()));
+                log.debug("已刷新空气质量缓存：{}", key);
+                return new WeatherResult(fresh, false);
+            } catch (IOException | RuntimeException e) {
+                return staleOrRethrow(airCache, key, e);
+            }
         }
     }
 

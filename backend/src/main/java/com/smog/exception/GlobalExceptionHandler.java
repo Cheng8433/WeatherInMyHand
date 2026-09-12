@@ -28,12 +28,24 @@ public class GlobalExceptionHandler {
         return error(e.getMessage());
     }
 
-    /** 兜底异常（含 LocationService 包装的 RuntimeException 等）。 */
+    /** 参数类错误：消息是刻意写给调用方看的（如“缺少城市名或经纬度参数”“无效的请求参数”），原样透传。 */
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, Object> handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("请求参数有误: {}", e.getMessage());
+        return error(e.getMessage());
+    }
+
+    /**
+     * 兜底异常（含 LocationService 包装的 RuntimeException 等）。
+     * 不把 e.getMessage() 返回给客户端：Hibernate/SQL 之类的异常消息会带出表名、SQL 片段等内部细节，
+     * 调用方只需要知道“服务端出问题了”，细节只进日志。
+     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> handleException(Exception e) {
         log.error("未预期的服务端异常", e);
-        return error(e.getMessage());
+        return error("服务器内部错误，请稍后再试");
     }
 
     private Map<String, Object> error(String message) {

@@ -111,6 +111,18 @@
     <string name="about_reset_consent">撤回隐私政策同意</string>
     <string name="about_reset_consent_done">已撤回同意，下次启动将重新提示</string>
     <string name="source_qweather_footer">天气数据来源：和风天气</string>
+    <!-- 数据时效标注：正常显示观测时间，降级/离线缓存时明确告知，避免把旧数据当实时 -->
+    <string name="data_time_fresh">数据更新：%1$s</string>
+    <string name="data_time_offline">离线缓存 · 更新于 %1$s</string>
+    <string name="data_time_unknown">数据更新时间未知</string>
+
+    <!-- 污染物中文名（和风 code: pm2p5/pm10/no2/so2/co/o3） -->
+    <string name="pollutant_pm2p5">颗粒物 PM2.5</string>
+    <string name="pollutant_pm10">可吸入颗粒物 PM10</string>
+    <string name="pollutant_no2">二氧化氮 NO₂</string>
+    <string name="pollutant_so2">二氧化硫 SO₂</string>
+    <string name="pollutant_co">一氧化碳 CO</string>
+    <string name="pollutant_o3">臭氧 O₃</string>
     <string name="cd_about">关于与隐私</string>
 
     <string name="privacy_policy_full">欢迎使用「掌中天气」。我们非常重视您的个人信息与隐私，本政策向您说明我们如何处理您的信息。
