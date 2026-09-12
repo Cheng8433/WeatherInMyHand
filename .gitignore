@@ -14,6 +14,8 @@ target/
 android/.gradle/
 android/build/
 android/app/build/
+# Android Studio「Generate Signed Bundle/APK」的默认输出目录（含 output-metadata.json）
+android/app/release/
 android/local.properties
 *.apk
 *.aab
