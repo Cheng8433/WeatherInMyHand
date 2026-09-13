@@ -30,11 +30,13 @@ WeatherInMyHand/
 │   │   │   ├── UiFormat.java          # 单值怎么显示：数值+单位/污染物读数/百分比串
 │   │   │   ├── LoadOverlay.java       # 全局细加载条 + 错误重试浮层
 │   │   │   ├── LocationHelper.java    # 一次性实时定位（权限/监听/10 秒超时）
+│   │   │   ├── FavoritesStore.java    # 城市收藏夹持久化（SharedPreferences 有序列表，可单测的纯函数）
+│   │   │   ├── FavoritesDialog.java   # 收藏城市弹窗：点行切城 / 收藏或取消当前城 / ✕ 删除
 │   │   │   └── net/
 │   │   │       ├── WeatherApi.java    # 后端 HTTP 客户端 + 统一 JSON 契约解析
 │   │   │       └── NetworkStatus.java # 系统联网状态查询（请求前/定位前共用同一口径）
 │   │   └── res/
-│   │       ├── layout/    # activity_main、header_bar、page_today/air/trend、activity_privacy
+│   │       ├── layout/    # activity_main、header_bar、page_today/air/trend、activity_privacy、dialog_favorites/item_favorite
 │   │       ├── menu/      # menu_bottom（底部导航 3 项）
 │   │       ├── mipmap-*/  # 桌面图标（自适应 + 各密度 PNG）
 │   │       ├── xml/       # network_security_config（system + 内置 Sectigo R46 根）
@@ -59,7 +61,7 @@ WeatherInMyHand/
 
 - 已切 **HTTPS**：云端 nginx 装 ZeroSSL **IP 证书**（纯公网 IP、无域名），443 TLS 反代到后端 `127.0.0.1:8080`，80 全跳 301；后端收拢为只绑回环、**公网明文 8080 已关闭**。详见 `HTTPS-DEPLOY.md`。
 - Android 端 `BACK_HOST_API=https://118.178.147.156/api/`，Manifest **关闭明文**（`usesCleartextTraffic=false`），并内置 **Sectigo R46 公共根**（`res/raw/sectigo_r46.pem`），以兼容系统信任库较旧、缺 R46 新根的设备。
-- 隐私合规：首启不可关闭的同意门（`PrivacyStore`）、关于与隐私政策页（`PrivacyActivity`）。当前版本 **1.0.5（versionCode 6）**。
+- 隐私合规：首启不可关闭的同意门（`PrivacyStore`）、关于与隐私政策页（`PrivacyActivity`）。当前版本 **1.0.6（versionCode 7）**。
 - 质量加固（1.0.3，2026-09-10）：安卓修掉定位监听/超时回调泄漏（`onDestroy` 注销 + 取消在途请求）、响应体读取异常导致加载条卡死、并发请求旧城市覆盖新城市（请求序号）；后端 `/air` 失败降级与数字字段解析容错，写路径补事务（该端点已于 1.0.5 删除，见下）。
 - 数据可信度（1.0.4，2026-09-11）：客户端开始读取后端 `stale` 降级标记，今天页页脚显示「数据更新：MM-dd HH:mm」，降级或读本地缓存时明示「离线缓存 · 更新于 …」；`WeatherCache` 加容量上限（最多 10 城，按写入时间淘汰）与 24 小时有效期；网络判断改用 `getActiveNetwork` + `NetworkCapabilities`（原废弃 `getActiveNetworkInfo` 会把有网误判为无网络）；后端 `/api/location/local` 改用 HashMap 组装，避免可空经纬度触发 `Map.of` 的 NPE（该接口已于 2026-09-12 整体删除，见下）。
 - 发版瘦身与稳健性（1.0.4，2026-09-11）：Android release 打开 **R8**（`minifyEnabled` + `shrinkResources`，规则见 `app/proguard-rules.pro`），release 包从 **8.1 MB 降到 2.8 MB**（未压缩 debug 包 8.1 MB 作参照；其中单是把 AnyChart 的整库 `-keep` 收窄到「只保 JS 桥」就省下 1.1 MB）。`gradle.properties` 补 `org.gradle.jvmargs=-Xmx2048m`，否则 R8 会因默认 512m 堆 GC 抖动中断构建。后端 `WeatherService` 的天气/空气缓存放进 `ResultCache`（上限 200 条 + 按时间淘汰 + 同城单飞，避免并发下同一城市重复打和风），日志改用 `logback-spring.xml` 按天/按 10MB 滚动（保留 14 天、总量 200MB），兜底异常不再把 `e.getMessage()` 透给客户端（Hibernate/SQL 消息会带出表名与 SQL 片段，只进日志）；`WeatherFormat` 里残留的中文（AQI 等级/评估/健康建议、风向、污染物名）全部外置到 `arrays.xml` / `strings.xml`。
@@ -70,6 +72,7 @@ WeatherInMyHand/
 - 位置数据最小化（1.0.4，2026-09-12）：把「位置不上服务器」这件事做彻底，分两侧。(1) 服务端删掉 `GET /api/location/local` 全套访问路径（`LocationController.getLatestLocation`、`LocationService.getCurrentLocation`、`LocationRepository.findTopByOrderByUpdateTimeDesc`）以及零调用的 `WeatherService.getCurrentLocation`、随之无用的 `locationRepository` 字段与 `LocationService.getLocationFromDB`——它没有主人标识，"最新一条"只可能是全局语义，留不下任何合理的将来用法；(2) 坐标不再落库：`saveLocationByLatLon`/`reverseGeocode` 原先把**调用方上传的原始经纬度**存进 `locations`，现改为一律存**逆地理编码出的城市中心坐标**，且该约束放在服务端强制——位置属敏感个人信息，天气只需城市级粒度，不该让某个客户端版本决定要不要写精确坐标；客户端同时移除 `saveLocationToServer` 调用与方法（其唯一消费者 `/local` 已删，城市缓存由后端 `getOrFetchLocation` 按需自填），GPS fix 现在只用于当次天气查询、不上传也不留存；(3) 顺带修掉写路径不一致：`saveLocationFromApi` 原先是裸 `save()`，每搜一次城市就 INSERT 一行（表随使用增长、同城堆重复行，也是 AGENTS.md 里"唯一索引暂缓"的成因），现与经纬度路径共用同一个 `upsertByCityName`，按 API 返回的标准城市名去重，同一城市库里始终只有一行。
 - 精简与超时对齐（1.0.5，2026-09-12）：(1) **客户端读超时 10 秒提到 30 秒**——OkHttp 默认 10 秒短于后端一次综合请求的最坏预算（缓存未命中时串行打 4 次和风：地理编码→实时→空气→逐小时，每次上游 connect 5s + read 15s），后端还在取数客户端就先断开，界面误报「网络错误」而服务端其实可能已经成功，这次刷新等于白费；(2) **删掉两处死链路**：`GET /api/weather/air` 客户端从不调用、且综合路径不经过它的缓存（`airCache` 在生产环境恒空），`POST /api/location/save` 对 App 自身完全冗余（城市缓存由后端 `getOrFetchLocation` 按需自填，这次 POST 只是每次搜索白花一次请求与一个限流额度）——随之删除 `LocationController` 整个类、`LocationService.saveLocationByLatLon`（唯一调用者就是它）与「按经纬度写库」分支，服务端至此**没有任何写位置的入口**，限流路径也收拢为只覆盖 `/api/weather/**`；(3) **删 `getCityNameFromLastWeather` 及其空白城市兜底分支**——它取「全库最新一条」天气记录的城市名，正是已删的 `/api/location/local` 的全局语义，且实际不可达（`/info` 与 `/air` 都必传城市名）；`getAirQualityByLatLon` 改为城市名为空时显式报错，并清理随之无用的 `WeatherRepository.findTopByOrderByUpdateTimeDesc`；(4) **修 `staleOrRethrow` 的消息外泄**：非 IOException 原先被包成 `new IOException(cause.getMessage(), cause)`，而 `GlobalExceptionHandler` 会把 IOException 的 message 原样返回给客户端，等于让 JPA/SQL 的表名与 SQL 片段绕过「细节只进日志」的闸门，现改为固定文案对外、原始异常只挂因果链供日志追溯；(5) **重写 `API-DOC.md`**：它此前仍在描述已删的 `/api/location/local` 与「无记录返回 404」这个已不存在的例外、称客户端每次定位都会上报坐标（与隐私修复正好相反）、把 `/air` 的天气字段写成恒为 null（实际会复用该城已有行），并补上 `stale` 降级标记与限流两处契约说明；同时订正文档里「4 套主题」的笔误（实为 5 套）。
 - 天气数据不再落库（2026-09-12，后端；并入尚未出包的 1.0.5）：删掉 `weather_data` 表所在的整层持久化——`WeatherRepository`、`Weather` 上的 JPA 注解与自增主键一并移除，该类从 `entity/` 移到 `dto/`（它从来就是 `/info` 的响应模型，由 Controller 直接序列化成 `data`）。它一直是**只写不读**的：全仓库对它的 5 处引用里，两处读只是 upsert 的底稿，响应里的 `data` 来自内存对象、缓存窗口内来自 `infoCache`，连 `stale` 降级读的也是内存 `ResultCache.lastKnown()` 而非数据库——所以它唯一的实际作用是每次缓存未命中多出 3 次全行写，并把 `locations` 拖进「想加 `city_name` 唯一索引又怕存量重复行」的僵局。**服务端至此只剩 `locations` 一张表**，那个唯一索引缺口随删除消失（而非被修补）。接口侧只有一处可见变化：`data` 不再有 `id`（客户端不读它）；`updateTime` 保留，它由服务端取数时显式赋值，客户端的「数据更新」页脚与本地缓存 24h 有效期判定都靠它。另有一处更诚实的行为变化：上游本次没返回的字段现在为 `null`，不再从旧行沿用上一次的值（旧值冒充本次数据且不带任何标记，正是 1.0.4「数据可信度」要治的病）。**而这层「沿用」还一直遮着一个真 bug**：`mergeAirQuality` 逐个搬运空气质量字段时漏了 `aqiCN`（搬了 `aqi`/`aqiUs`/`aqiQa` 与全部污染物，唯独没有它），所以 `aqiCN` 此前只能在「该城上一行恰好存过」时才有值——同一城市反复查询看着正常，**换一个从未查过的城市就是 null**。去掉 DB 沿用后它必然恒为 null，本轮顺手补上这一行；已用全新城市验证（`黄浦` 首查即返回 `aqiCN`），与 `aqi` 取值一致。
+- 城市收藏夹（1.0.6，2026-09-13，安卓；后端零改动）：顶栏新增 ☆ 按钮，弹出收藏城市弹窗——点某城即切换过去，不用再手输城市名。切城复用 `searchWeatherByCity`（`MainActivity.java:364`）的「用户明确指定某城」语义：失败只回落到**该城自己**的本地缓存、绝不拿别的城市顶替，并发裁定沿用现成的 `uiApplySeq`「最后发起者胜」，收藏夹本身不引入第二套序号。弹窗列表里当前城市带「（当前）」标记、每行右侧 ✕ 取消收藏，底部一行对当前城市一键收藏/取消（无城市可收藏时置灰）。**收藏是纯设备本地态**：`FavoritesStore` 用 SharedPreferences 存一个有序列表，上限 12（满了**拒绝新增**并提示，而非静默淘汰旧收藏——手动挑的城市被悄悄丢掉比直接说“满了”更意外），不入云端、不上服务器；后端是「按城市名取数」的无状态接口，本就无需为收藏加任何东西。可测性做了分层：`parse`/`join`/`plus`/`minus` 是不碰 Context 的纯函数（单测新增 13 例，安卓单测合计 26 例），带 Context 的公开方法只是它们的薄壳；也正因此**没有**用 JSON 存储——`org.json` 在本地 JVM 单测里会抛（Android SDK 桩），用它会把这份可测性锁死。已知取舍：收藏比对的是**字符串**城市名，GPS 逆地理可能解析成区级名（如「黄浦」）而收藏的是「上海」，两者会各占一条，本轮不做行政区划归一。
 
 ## 运行方法
 

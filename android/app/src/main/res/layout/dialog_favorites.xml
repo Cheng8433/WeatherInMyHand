@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    收藏城市弹窗的自定义内容：上面是收藏列表（空态给提示），下面一行是「收藏/取消收藏当前城市」。
+    列表与底部行的内容由 FavoritesDialog.rebuild() 在每次增删后重画。
+    颜色一律走 ?attr/xxx（弹窗主题由 Activity 主题派生，5 套主题自动适配），不写死。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:paddingTop="8dp">
+
+    <TextView
+            android:id="@+id/tvFavoritesEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="16dp"
+            android:text="@string/favorites_empty"
+            android:textColor="?attr/textSecondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:visibility="gone" />
+
+    <!-- 收藏列表。wrap_content + 父窗口的高度约束 → 超过一屏会自己可滚 -->
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:id="@+id/favoritesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+    </ScrollView>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:alpha="0.25"
+            android:background="?attr/textSecondary" />
+
+    <TextView
+            android:id="@+id/btnToggleCurrent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:textColor="?attr/textPrimary"
+            android:textSize="15sp" />
+</LinearLayout>

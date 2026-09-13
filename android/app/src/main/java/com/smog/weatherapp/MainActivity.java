@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     // header
     private TextView tvCityName;
     private EditText etSearchCity;
-    private ImageButton btnSearch, btnRefresh, btnTheme, btnAbout;
+    private ImageButton btnSearch, btnFavorites, btnRefresh, btnTheme, btnAbout;
 
     // 三页根容器
     private ScrollView scrollToday, scrollAir, scrollTrend;
@@ -207,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
         tvCityName = findViewById(R.id.tvCityName);
         etSearchCity = findViewById(R.id.etSearchCity);
         btnSearch = findViewById(R.id.btnSearch);
+        btnFavorites = findViewById(R.id.btnFavorites);
         btnRefresh = findViewById(R.id.btnRefresh);
         btnTheme = findViewById(R.id.btnTheme);
         btnAbout = findViewById(R.id.btnAbout);
@@ -237,6 +238,12 @@ public class MainActivity extends AppCompatActivity {
                 loadWeatherData(currentCity);
             }
         });
+        // 收藏夹：选中某城后当作一次「用户指定的搜索」——失败只回落到该城自己的缓存，不跨城顶替
+        btnFavorites.setOnClickListener(v -> new FavoritesDialog(this, currentCity, city -> {
+            etSearchCity.setText(city);
+            hideSoftKeyboard();
+            searchWeatherByCity(city);
+        }).show());
         btnTheme.setOnClickListener(v -> ThemeHelper.showPicker(this, () -> recreate()));
         btnAbout.setOnClickListener(v -> openPrivacyPage());
         bottomNav.setOnItemSelectedListener(item -> {

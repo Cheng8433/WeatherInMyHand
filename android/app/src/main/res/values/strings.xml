@@ -20,6 +20,7 @@
 
     <!-- ===== 通用动作 / 退出确认 ===== -->
     <string name="action_cancel">取消</string>
+    <string name="action_close">关闭</string>
     <string name="action_retry">重试</string>
     <string name="action_exit">退出</string>
     <string name="exit_title">退出掌中天气</string>
@@ -42,6 +43,19 @@
     <!-- ===== 搜索 / 刷新提示 ===== -->
     <string name="search_toast_empty">请输入城市名称</string>
     <string name="refresh_toast_no_city">还没有可刷新的城市，先搜索或定位</string>
+
+    <!-- ===== 城市收藏夹 ===== -->
+    <string name="cd_favorites">收藏城市</string>
+    <string name="favorites_title">收藏城市</string>
+    <string name="favorites_empty">还没有收藏城市\n先搜索或定位到某座城市，再点下方按钮收藏</string>
+    <string name="favorites_current_suffix">%1$s（当前）</string>
+    <string name="favorites_add_current">＋ 收藏当前城市（%1$s）</string>
+    <string name="favorites_remove_current">★ 取消收藏当前城市（%1$s）</string>
+    <string name="favorites_added">已收藏 %1$s</string>
+    <string name="favorites_removed">已取消收藏 %1$s</string>
+    <string name="favorites_full">最多收藏 %1$d 个城市</string>
+    <string name="favorites_no_city">还没有可收藏的城市</string>
+    <string name="cd_favorites_delete">取消收藏 %1$s</string>
 
     <!-- ===== 定位提示 ===== -->
     <string name="permission_denied">需要定位权限才能显示位置</string>
